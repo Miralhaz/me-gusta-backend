@@ -1,34 +1,15 @@
-package school.sptech.megusta.model;
+package school.sptech.megusta.dto.usuario;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-
-@Entity
-@Table(name = "usuario")
-public class Usuario {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UsuarioResponseDto {
     private Integer id;
-
-    @NotBlank
-    @Column(nullable = false)
     private String nome;
-
-    @NotBlank
-    @Column(nullable = false)
-    @Email
     private String email;
-
-    @NotBlank
-    @Column(nullable = false)
     private String senha;
 
-    public Usuario() {
+    public UsuarioResponseDto() {
     }
 
-    public Usuario(Integer id, String nome, String email, String senha) {
+    public UsuarioResponseDto(Integer id, String nome, String email, String senha) {
         this.id = id;
         this.nome = nome;
         this.email = email;
