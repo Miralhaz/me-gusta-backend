@@ -42,7 +42,7 @@ public class UsuarioService {
 
     public Usuario atualizar(Usuario usuarioParaAtualizar, Integer id){
         if(!repository.existsById(id)){
-            throw new UsuarioNaoEncontradoException(usuarioParaAtualizar.getId());
+            throw new UsuarioNaoEncontradoException(id);
         }
         boolean existeEmDuplicidade = repository.existsByNomeAndEmailAndIdNot(usuarioParaAtualizar.getNome(),
                 usuarioParaAtualizar.getEmail(), usuarioParaAtualizar.getId());
