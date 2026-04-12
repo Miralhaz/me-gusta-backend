@@ -3,9 +3,9 @@ package school.sptech.megusta.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Categoria de Insumo não encontrada.")
 public class CategoriaInsumoNaoEncontradaException extends RuntimeException {
-    public CategoriaInsumoNaoEncontradaException(Integer id) {
-        super("Categoria de Insumo com id %d não encontrado".formatted(id));
+    public CategoriaInsumoNaoEncontradaException(String message) {
+        super(message);
     }
 }

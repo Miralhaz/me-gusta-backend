@@ -1,4 +1,4 @@
-package school.sptech.megusta.dto.usuario;
+package school.sptech.megusta.dto.categoria_insumo;
 
 public class CategoriaInsumoResponseDto {
 

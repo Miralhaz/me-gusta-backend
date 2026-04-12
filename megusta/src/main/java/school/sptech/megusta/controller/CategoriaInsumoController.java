@@ -1,9 +1,10 @@
 package school.sptech.megusta.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import school.sptech.megusta.dto.usuario.CategoriaInsumoRequestDto;
-import school.sptech.megusta.dto.usuario.CategoriaInsumoResponseDto;
+import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
+import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
 import school.sptech.megusta.mapper.CategoriaInsumoMapper;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.service.CategoriaInsumoService;
@@ -26,20 +27,18 @@ public class CategoriaInsumoController {
         if (categoriaInsumos.isEmpty()){
             return ResponseEntity.noContent().build();
         }
-        List<CategoriaInsumoResponseDto> response = CategoriaInsumoMapper.toResponseDtoList(categoriaInsumos);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(CategoriaInsumoMapper.toResponseDtoList(categoriaInsumos));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaInsumoResponseDto> buscarPorId(@PathVariable Integer id){
         CategoriaInsumo categoriaInsumoAchada = service.buscarPorId(id);
-        CategoriaInsumoResponseDto response = CategoriaInsumoMapper.toResponseDto(categoriaInsumoAchada);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(CategoriaInsumoMapper.toResponseDto(categoriaInsumoAchada));
     }
 
     @PostMapping
     public ResponseEntity<CategoriaInsumoResponseDto> cadastrar(
-            @RequestBody CategoriaInsumoRequestDto request
+            @RequestBody @Valid CategoriaInsumoRequestDto request
             ){
         CategoriaInsumo categoriaInsumo = CategoriaInsumoMapper.toEntity(request);
         CategoriaInsumo categoriaCadastrada = service.cadastrar(categoriaInsumo);
