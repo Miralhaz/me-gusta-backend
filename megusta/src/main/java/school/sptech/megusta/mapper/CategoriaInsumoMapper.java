@@ -1,7 +1,7 @@
 package school.sptech.megusta.mapper;
 
-import school.sptech.megusta.dto.usuario.CategoriaInsumoRequestDto;
-import school.sptech.megusta.dto.usuario.CategoriaInsumoResponseDto;
+import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
+import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
 import school.sptech.megusta.model.CategoriaInsumo;
 
 import java.util.List;

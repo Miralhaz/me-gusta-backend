@@ -1,8 +1,8 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
-import school.sptech.megusta.dto.usuario.CategoriaInsumoRequestDto;
-import school.sptech.megusta.dto.usuario.CategoriaInsumoResponseDto;
+import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
+import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
 import school.sptech.megusta.exception.CategoriaInsumoConflitoException;
 import school.sptech.megusta.exception.CategoriaInsumoNaoEncontradaException;
 import school.sptech.megusta.model.CategoriaInsumo;
@@ -25,11 +25,9 @@ public class CategoriaInsumoService {
     }
 
     public CategoriaInsumo buscarPorId(Integer id){
-        Optional<CategoriaInsumo> categoriaOptional = categoriaInsumoRepository.findById(id);
-        if (categoriaOptional.isEmpty()){
-            throw new CategoriaInsumoNaoEncontradaException(id);
-        }
-        return categoriaOptional.get();
+        CategoriaInsumo categoriaInsumo = categoriaInsumoRepository.findById(id)
+                .orElseThrow(() -> new CategoriaInsumoNaoEncontradaException("Categoria não encontrada."));
+        return categoriaInsumo;
     }
 
     public CategoriaInsumo cadastrar(CategoriaInsumo categoriaACadastrar){
@@ -37,14 +35,13 @@ public class CategoriaInsumoService {
         if (existe){
             throw new CategoriaInsumoConflitoException("Categoria de insumo já existe!");
         }
-        categoriaInsumoRepository.save(categoriaACadastrar);
-        return categoriaACadastrar;
+        return categoriaInsumoRepository.save(categoriaACadastrar);
     }
 
     public void deletar(Integer id){
         boolean existe = categoriaInsumoRepository.existsById(id);
         if (!existe){
-            throw new CategoriaInsumoNaoEncontradaException(id);
+            throw new CategoriaInsumoNaoEncontradaException("Categoria de insumo não encontrada.");
         }
         categoriaInsumoRepository.deleteById(id);
     }

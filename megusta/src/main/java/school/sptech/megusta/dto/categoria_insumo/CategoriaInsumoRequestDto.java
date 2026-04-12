@@ -1,4 +1,4 @@
-package school.sptech.megusta.dto.usuario;
+package school.sptech.megusta.dto.categoria_insumo;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
