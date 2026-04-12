@@ -44,7 +44,7 @@ public class UnidadeMedidaService {
         return unidadeMedidaRepository.save(unidadeAchada);
     }
 
-    public ResponseEntity<Void> deletar(Integer id){
+    public void deletar(Integer id){
         UnidadeMedida unidadeMedida = unidadeMedidaRepository.findById(id)
                 .orElseThrow(() -> new UnidadeMedidaNaoEncontradaException("Unidade de medida não encontrada."));
         unidadeMedidaRepository.deleteById(id);
