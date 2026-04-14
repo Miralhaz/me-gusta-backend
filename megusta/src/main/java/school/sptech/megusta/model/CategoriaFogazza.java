@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "school/sptech/megusta/dto/categoria_fogazza")
+@Table(name = "categoria_fogazza")
 public class CategoriaFogazza {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
