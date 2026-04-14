@@ -54,7 +54,7 @@ public class UsuarioService {
         return usuarioAtualizado;
     }
 
-    public void remover(Integer id){
+    public void excluir(Integer id){
         boolean existe = repository.existsById(id);
         if(!existe){
             throw new UsuarioNaoEncontradoException(id);
