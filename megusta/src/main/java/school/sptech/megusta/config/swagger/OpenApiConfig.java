@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
 info = @Info(
         title = "Projeto Me Gusta",
-        description = "Documentação da API Rest do projeto de Extenção com o beneficiário Me Gusta Fogazzas Artesanais",
+        description = "Documentação da API Rest do projeto de Extensão com o beneficiário Me Gusta Fogazzas Artesanais",
         contact = @Contact(
                 name = "Breno",
                 url = "https://github.com/Miralhaz/me-gusta-backend",

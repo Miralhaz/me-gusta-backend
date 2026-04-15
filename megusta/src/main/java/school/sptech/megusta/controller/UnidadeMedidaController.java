@@ -12,7 +12,7 @@ import school.sptech.megusta.service.UnidadeMedidaService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/unidade_medidas")
+@RequestMapping("/unidade-medidas")
 public class UnidadeMedidaController {
 
     private final UnidadeMedidaService unidadeMedidaService;
