@@ -1,15 +1,18 @@
 package school.sptech.megusta.config.swagger;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
+security = @SecurityRequirement(name = "bearerAuth"),
 info = @Info(
         title = "Projeto Me Gusta",
         description = "Documentação da API Rest do projeto de Extensão com o beneficiário Me Gusta Fogazzas Artesanais",
@@ -23,7 +26,11 @@ info = @Info(
 )
 )
 @SecurityScheme(
-        name = "Bearer", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT"
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        in = SecuritySchemeIn.HEADER
 )
 
 public class OpenApiConfig {
