@@ -1,4 +1,4 @@
-package school.sptech.megusta.dto;
+package school.sptech.megusta.dto.autenticacao;
 
 import jakarta.validation.constraints.NotBlank;
 
