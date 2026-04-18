@@ -1,8 +1,13 @@
 package school.sptech.megusta.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
+import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
 import school.sptech.megusta.exception.UsuarioConflitoException;
 import school.sptech.megusta.exception.UsuarioNaoEncontradoException;
+import school.sptech.megusta.mapper.UsuarioMapper;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.repository.UsuarioRepository;
 
@@ -11,6 +16,9 @@ import java.util.Optional;
 
 @Service
 public class UsuarioService {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final UsuarioRepository repository;
 
@@ -30,28 +38,34 @@ public class UsuarioService {
         return usuarioOptional.get();
     }
 
-    public Usuario cadastrar(Usuario usuarioParaCadastrar){
+    public UsuarioResponseDto cadastrar(UsuarioRequestDto requestDto){
+        requestDto.setSenha(passwordEncoder.encode(requestDto.getSenha()));
+        Usuario usuarioParaCadastrar = UsuarioMapper.toEntity(requestDto);
+
         boolean existe = repository.existsByNomeAndEmail(usuarioParaCadastrar.getNome(),
                 usuarioParaCadastrar.getEmail());
         if(existe){
            throw new UsuarioConflitoException("Usuário já existe!");
         }
         Usuario usuarioCadastrado = repository.save(usuarioParaCadastrar);
-        return usuarioCadastrado;
+        return UsuarioMapper.toResponseDto(usuarioCadastrado);
     }
 
-    public Usuario atualizar(Usuario usuarioParaAtualizar, Integer id){
+    public UsuarioResponseDto atualizar(UsuarioRequestDto requestDto, Integer id){
+        requestDto.setSenha(passwordEncoder.encode(requestDto.getSenha()));
+        Usuario usuarioParaAtualizar = UsuarioMapper.toEntity(requestDto);
+
         if(!repository.existsById(id)){
             throw new UsuarioNaoEncontradoException(id);
         }
         boolean existeEmDuplicidade = repository.existsByNomeAndEmailAndIdNot(usuarioParaAtualizar.getNome(),
-                usuarioParaAtualizar.getEmail(), usuarioParaAtualizar.getId());
+                usuarioParaAtualizar.getEmail(), id);
         if(existeEmDuplicidade){
             throw new UsuarioConflitoException("Usuário já existe!");
         }
         usuarioParaAtualizar.setId(id);
         Usuario usuarioAtualizado = repository.save(usuarioParaAtualizar);
-        return usuarioAtualizado;
+        return UsuarioMapper.toResponseDto(usuarioAtualizado);
     }
 
     public void excluir(Integer id){
