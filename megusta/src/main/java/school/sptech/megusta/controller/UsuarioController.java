@@ -41,9 +41,7 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDto> cadastrar(
             @RequestBody UsuarioRequestDto dto
             ){
-        Usuario user = UsuarioMapper.toEntity(dto);
-        Usuario salvo = service.cadastrar(user);
-        return ResponseEntity.status(201).body(UsuarioMapper.toResponseDto(salvo));
+        return ResponseEntity.status(201).body(service.cadastrar(dto));
     }
 
     @PutMapping("/{id}")
@@ -51,9 +49,7 @@ public class UsuarioController {
             @PathVariable Integer id,
             @RequestBody UsuarioRequestDto dto
     ){
-        Usuario user = UsuarioMapper.toEntity(dto);
-        Usuario salvo = service.atualizar(user, id);
-        return ResponseEntity.ok(UsuarioMapper.toResponseDto(salvo));
+        return ResponseEntity.ok(service.atualizar(dto, id));
     }
 
     @DeleteMapping("/{id}")
