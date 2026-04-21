@@ -38,6 +38,19 @@ public class InsumoRequest {
     @Schema(example = "1")
     private Integer fkUnidadeMedida;
 
+    @NotNull
+    @Positive
+    @Schema(example = "1")
+    private Integer fkStatus;
+
+    public Integer getFkStatus() {
+        return fkStatus;
+    }
+
+    public void setFkStatus(Integer fkStatus) {
+        this.fkStatus = fkStatus;
+    }
+
     public boolean isAtivo() {
         return ativo;
     }

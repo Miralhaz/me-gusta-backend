@@ -26,6 +26,31 @@ public class InsumoResponse {
 
     private InsumoCategoria insumoCategoria;
     private UnidadeInsumo unidadeInsumo;
+    private TipoStatusInsumo tipoStatus;
+
+    public static class TipoStatusInsumo {
+        @Schema(example = "1")
+        private Integer id;
+
+        @Schema(example = "OK")
+        private String nome;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getNome() {
+            return nome;
+        }
+
+        public void setNome(String nome) {
+            this.nome = nome;
+        }
+    }
 
     public static class InsumoCategoria {
         @Schema(example = "1")
@@ -73,6 +98,14 @@ public class InsumoResponse {
         public void setUnidade(String unidade) {
             this.unidade = unidade;
         }
+    }
+
+    public TipoStatusInsumo getTipoStatus() {
+        return tipoStatus;
+    }
+
+    public void setTipoStatus(TipoStatusInsumo tipoStatus) {
+        this.tipoStatus = tipoStatus;
     }
 
     public boolean isAtivo() {
