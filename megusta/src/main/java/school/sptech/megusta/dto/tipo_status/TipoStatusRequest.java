@@ -1,5 +1,6 @@
 package school.sptech.megusta.dto.tipo_status;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 
@@ -7,6 +8,7 @@ public class TipoStatusRequest {
 
     @NotBlank
     @Column(nullable = false)
+    @Schema(example = "Em preparo")
     private String nome;
 
     public TipoStatusRequest() {

@@ -1,8 +1,13 @@
 package school.sptech.megusta.dto.categoria_insumo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class CategoriaInsumoResponseDto {
 
+    @Schema(example = "1")
     private Integer id;
+
+    @Schema(example = "Laticínios")
     private String nome;
 
     public CategoriaInsumoResponseDto(Integer id, String nome) {

@@ -1,13 +1,16 @@
 package school.sptech.megusta.dto.autenticacao;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
 public class AutenticacaoRequestDto {
 
     @NotBlank
+    @Schema(example = "breno@megusta.com")
     private String login;
 
     @NotBlank
+    @Schema(example = "senha123")
     private String senha;
 
     public AutenticacaoRequestDto() {

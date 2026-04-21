@@ -1,5 +1,12 @@
 package school.sptech.megusta.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
@@ -13,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
+@Tag(name = "02. Usuários", description = "Gerenciamento de perfis de usuários e upload de imagens")
 public class UsuarioController {
 
     private final UsuarioService service;
@@ -21,6 +29,13 @@ public class UsuarioController {
         this.service = service;
     }
 
+    @Operation(summary = "Listar todos os usuários", security = @SecurityRequirement(name = "Bearer"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
+            @ApiResponse(responseCode = "204", description = "Nenhum usuário cadastrado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDto>> listar(){
         List<Usuario> users = service.listar();
@@ -31,12 +46,26 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Buscar usuário por ID", security = @SecurityRequirement(name = "Bearer"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> buscarPorId(@PathVariable Integer id){
         Usuario user = service.buscarPorId(id);
         return ResponseEntity.ok(UsuarioMapper.toResponseDto(user));
     }
 
+    @Operation(summary = "Cadastrar novo usuário")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "409", description = "E-mail já cadastrado", content = @Content)
+    })
     @PostMapping
     public ResponseEntity<UsuarioResponseDto> cadastrar(
             @RequestBody UsuarioRequestDto dto
@@ -44,6 +73,14 @@ public class UsuarioController {
         return ResponseEntity.status(201).body(service.cadastrar(dto));
     }
 
+    @Operation(summary = "Atualizar dados do usuário", security = @SecurityRequirement(name = "Bearer"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> atualizar(
             @PathVariable Integer id,
@@ -52,6 +89,12 @@ public class UsuarioController {
         return ResponseEntity.ok(service.atualizar(dto, id));
     }
 
+    @Operation(summary = "Excluir usuário", security = @SecurityRequirement(name = "Bearer"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Integer id){
         service.excluir(id);
