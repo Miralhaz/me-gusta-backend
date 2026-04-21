@@ -48,6 +48,34 @@ public class Insumo {
     @JoinColumn(name = "fk_unidade_medida", nullable = false)
     private UnidadeMedida unidadeMedida;
 
+    @ManyToOne
+    @JoinColumn(name = "fk_status", nullable = false)
+    private TipoStatus tipoStatus;
+
+    public Double getQtdAtual() {
+        return qtdAtual;
+    }
+
+    public void setQtdAtual(Double qtdAtual) {
+        this.qtdAtual = qtdAtual;
+    }
+
+    public LocalDateTime getDtCadastro() {
+        return dtCadastro;
+    }
+
+    public void setDtCadastro(LocalDateTime dtCadastro) {
+        this.dtCadastro = dtCadastro;
+    }
+
+    public TipoStatus getTipoStatus() {
+        return tipoStatus;
+    }
+
+    public void setTipoStatus(TipoStatus tipoStatus) {
+        this.tipoStatus = tipoStatus;
+    }
+
     public boolean isAtivo() {
         return ativo;
     }

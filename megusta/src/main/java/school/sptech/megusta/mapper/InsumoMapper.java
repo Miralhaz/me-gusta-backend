@@ -4,6 +4,7 @@ import school.sptech.megusta.dto.insumo.InsumoRequest;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.Insumo;
+import school.sptech.megusta.model.TipoStatus;
 import school.sptech.megusta.model.UnidadeMedida;
 
 import java.util.List;
@@ -14,12 +15,16 @@ public class InsumoMapper {
 
         InsumoResponse.InsumoCategoria insumoCategoria = new InsumoResponse.InsumoCategoria();
         InsumoResponse.UnidadeInsumo unidadeInsumo = new InsumoResponse.UnidadeInsumo();
+        InsumoResponse.TipoStatusInsumo tipoStatusInsumo = new InsumoResponse.TipoStatusInsumo();
 
         insumoCategoria.setId(insumo.getCategoriaInsumo().getId());
         insumoCategoria.setNome(insumo.getCategoriaInsumo().getNome());
 
         unidadeInsumo.setId(insumo.getUnidadeMedida().getId());
         unidadeInsumo.setUnidade(insumo.getUnidadeMedida().getUnidade());
+
+        tipoStatusInsumo.setId(insumo.getTipoStatus().getId());
+        tipoStatusInsumo.setNome(insumo.getTipoStatus().getNome());
 
         InsumoResponse response = new InsumoResponse();
 
@@ -30,6 +35,7 @@ public class InsumoMapper {
         response.setAtivo(insumo.isAtivo());
         response.setInsumoCategoria(insumoCategoria);
         response.setUnidadeInsumo(unidadeInsumo);
+        response.setTipoStatus(tipoStatusInsumo);
 
         return response;
 
@@ -51,6 +57,10 @@ public class InsumoMapper {
         UnidadeMedida unidadeMedida = new UnidadeMedida();
         unidadeMedida.setId(request.getFkUnidadeMedida());
         insumo.setUnidadeMedida(unidadeMedida);
+
+        TipoStatus tipoStatus = new TipoStatus();
+        tipoStatus.setId(request.getFkStatus());
+        insumo.setTipoStatus(tipoStatus);
 
         return insumo;
     }
