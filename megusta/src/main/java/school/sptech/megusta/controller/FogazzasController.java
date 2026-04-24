@@ -28,7 +28,7 @@ public class FogazzasController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todas as fogazzas", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todas as fogazzas")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FogazzasResponseDto.class))),
@@ -44,7 +44,7 @@ public class FogazzasController {
         return ResponseEntity.ok(FogazzasMapper.toResponseDtoList(fogazzaList));
     }
 
-    @Operation(summary = "Buscar fogazza por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar fogazza por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Fogazza encontrada",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FogazzasResponseDto.class))),
@@ -57,7 +57,7 @@ public class FogazzasController {
         return ResponseEntity.ok(FogazzasMapper.toResponseDto(fogazza));
     }
 
-    @Operation(summary = "Cadastrar novo sabor de fogazza", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar novo sabor de fogazza")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Fogazza cadastrada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
@@ -70,7 +70,7 @@ public class FogazzasController {
         return ResponseEntity.status(201).body(FogazzasMapper.toResponseDto(fogazzaCadastrada));
     }
 
-    @Operation(summary = "Atualizar dados da fogazza", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Atualizar dados da fogazza")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Fogazza atualizada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FogazzasResponseDto.class))),
@@ -88,7 +88,7 @@ public class FogazzasController {
         return ResponseEntity.ok(FogazzasMapper.toResponseDto(fogazzaAtualizada));
     }
 
-    @Operation(summary = "Excluir sabor de fogazza", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir sabor de fogazza")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Fogazza excluída com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Fogazza não encontrada", content = @Content),

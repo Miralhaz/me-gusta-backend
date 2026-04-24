@@ -29,7 +29,7 @@ public class FornecedorController {
         this.fornecedorService = fornecedorService;
     }
 
-    @Operation(summary = "Listar todos os fornecedores", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todos os fornecedores")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FornecedorResponse.class))),
@@ -45,7 +45,7 @@ public class FornecedorController {
         return ResponseEntity.ok(FornecedorMapper.toResponseList(fornecedores));
     }
 
-    @Operation(summary = "Cadastrar novo fornecedor", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar novo fornecedor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Fornecedor cadastrado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FornecedorResponse.class))),
@@ -59,7 +59,7 @@ public class FornecedorController {
         return ResponseEntity.status(201).body(FornecedorMapper.toResponse(cadastrado));
     }
 
-    @Operation(summary = "Buscar fornecedor por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar fornecedor por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Fornecedor encontrado",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FornecedorResponse.class))),
@@ -72,7 +72,7 @@ public class FornecedorController {
         return ResponseEntity.ok(FornecedorMapper.toResponse(fornecedor));
     }
 
-    @Operation(summary = "Atualizar dados do fornecedor", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Atualizar dados do fornecedor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Fornecedor atualizado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = FornecedorResponse.class))),
@@ -90,7 +90,7 @@ public class FornecedorController {
         return ResponseEntity.ok(FornecedorMapper.toResponse(atualizado));
     }
 
-    @Operation(summary = "Excluir fornecedor", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir fornecedor")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Fornecedor excluído com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado", content = @Content),

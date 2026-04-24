@@ -30,7 +30,7 @@ public class InsumoController {
         this.insumoService = insumoService;
     }
 
-    @Operation(summary = "Listar todos os insumos", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todos os insumos")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
@@ -43,7 +43,7 @@ public class InsumoController {
         return ResponseEntity.ok(InsumoMapper.toResponse(insumos));
     }
 
-    @Operation(summary = "Buscar insumo por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar insumo por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Insumo encontrado",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
@@ -56,7 +56,7 @@ public class InsumoController {
         return ResponseEntity.ok(InsumoMapper.toResponse(insumo));
     }
 
-    @Operation(summary = "Cadastrar novo insumo", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar novo insumo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Insumo cadastrado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
@@ -70,7 +70,7 @@ public class InsumoController {
         return ResponseEntity.status(201).body(InsumoMapper.toResponse(insumoCriado));
     }
 
-    @Operation(summary = "Atualizar dados do insumo", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Atualizar dados do insumo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Insumo atualizado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
