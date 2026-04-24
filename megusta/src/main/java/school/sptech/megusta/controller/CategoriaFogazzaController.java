@@ -33,7 +33,7 @@ public class CategoriaFogazzaController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todas as categorias de fogazza", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todas as categorias de fogazza")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaFogazzaResponseDto.class))),
@@ -49,7 +49,7 @@ public class CategoriaFogazzaController {
         return ResponseEntity.ok(CategoriaFogazzaMapper.toResponseDtoList(categoriaFogazzaList));
     }
 
-    @Operation(summary = "Buscar categoria por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar categoria por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categoria encontrada",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaFogazzaResponseDto.class))),
@@ -62,7 +62,7 @@ public class CategoriaFogazzaController {
         return ResponseEntity.ok(CategoriaFogazzaMapper.toResponseDto(categoriaFogazzaCapturada));
     }
 
-    @Operation(summary = "Cadastrar nova categoria de fogazza", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar nova categoria de fogazza")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Categoria cadastrada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaFogazzaResponseDto.class))),
@@ -80,7 +80,7 @@ public class CategoriaFogazzaController {
                 (categoriaCadastrada));
     }
 
-    @Operation(summary = "Excluir categoria de fogazza", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir categoria de fogazza")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Categoria excluída com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Categoria não encontrada", content = @Content),

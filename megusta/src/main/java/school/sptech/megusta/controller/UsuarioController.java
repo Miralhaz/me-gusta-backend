@@ -29,7 +29,7 @@ public class UsuarioController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todos os usuários", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todos os usuários")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
@@ -46,7 +46,7 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Buscar usuário por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar usuário por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
@@ -73,7 +73,7 @@ public class UsuarioController {
         return ResponseEntity.status(201).body(service.cadastrar(dto));
     }
 
-    @Operation(summary = "Atualizar dados do usuário", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Atualizar dados do usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
@@ -89,7 +89,7 @@ public class UsuarioController {
         return ResponseEntity.ok(service.atualizar(dto, id));
     }
 
-    @Operation(summary = "Excluir usuário", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content),

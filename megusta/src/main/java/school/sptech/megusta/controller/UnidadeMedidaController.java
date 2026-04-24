@@ -29,7 +29,7 @@ public class UnidadeMedidaController {
         this.unidadeMedidaService = unidadeMedidaService;
     }
 
-    @Operation(summary = "Listar todas as unidades de medida", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todas as unidades de medida")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnidadeMedidaResponse.class))),
@@ -45,7 +45,7 @@ public class UnidadeMedidaController {
         return ResponseEntity.ok(UnidadeMedidaMapper.toResponse(unidadeMedidas));
     }
 
-    @Operation(summary = "Buscar unidade de medida por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar unidade de medida por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unidade encontrada",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnidadeMedidaResponse.class))),
@@ -58,7 +58,7 @@ public class UnidadeMedidaController {
         return ResponseEntity.ok(UnidadeMedidaMapper.toResponse(unidadeMedida));
     }
 
-    @Operation(summary = "Cadastrar nova unidade de medida", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar nova unidade de medida")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Unidade cadastrada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnidadeMedidaResponse.class))),
@@ -73,7 +73,7 @@ public class UnidadeMedidaController {
         return ResponseEntity.status(201).body(UnidadeMedidaMapper.toResponse(salvo));
     }
 
-    @Operation(summary = "Atualizar unidade de medida", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Atualizar unidade de medida")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unidade atualizada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnidadeMedidaResponse.class))),
@@ -91,7 +91,7 @@ public class UnidadeMedidaController {
         return ResponseEntity.ok(UnidadeMedidaMapper.toResponse(atualizada));
     }
 
-    @Operation(summary = "Excluir unidade de medida", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir unidade de medida")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Unidade excluída com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Unidade não encontrada", content = @Content),

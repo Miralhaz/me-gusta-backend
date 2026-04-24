@@ -29,7 +29,7 @@ public class CategoriaInsumoController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todas as categorias de insumo", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todas as categorias de insumo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaInsumoResponseDto.class))),
@@ -45,7 +45,7 @@ public class CategoriaInsumoController {
         return ResponseEntity.ok(CategoriaInsumoMapper.toResponseDtoList(categoriaInsumos));
     }
 
-    @Operation(summary = "Buscar categoria de insumo por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar categoria de insumo por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categoria encontrada",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaInsumoResponseDto.class))),
@@ -58,7 +58,7 @@ public class CategoriaInsumoController {
         return ResponseEntity.ok(CategoriaInsumoMapper.toResponseDto(categoriaInsumoAchada));
     }
 
-    @Operation(summary = "Cadastrar nova categoria de insumo", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar nova categoria de insumo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Categoria cadastrada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaInsumoResponseDto.class))),
@@ -75,7 +75,7 @@ public class CategoriaInsumoController {
         return ResponseEntity.status(201).body(CategoriaInsumoMapper.toResponseDto(categoriaCadastrada));
     }
 
-    @Operation(summary = "Excluir categoria de insumo", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir categoria de insumo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Categoria excluída com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Categoria não encontrada", content = @Content),

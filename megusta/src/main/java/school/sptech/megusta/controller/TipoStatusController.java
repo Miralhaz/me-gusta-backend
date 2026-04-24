@@ -29,7 +29,7 @@ public class TipoStatusController {
     }
 
 
-    @Operation(summary = "Listar todos os tipos de status", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Listar todos os tipos de status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TipoStatusResponse.class))),
@@ -45,7 +45,7 @@ public class TipoStatusController {
         return ResponseEntity.ok(TipoStatusMapper.toResponseList(status));
     }
 
-    @Operation(summary = "Buscar status por ID", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Buscar status por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Status encontrado",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TipoStatusResponse.class))),
@@ -57,7 +57,7 @@ public class TipoStatusController {
         return ResponseEntity.ok(TipoStatusMapper.toResponse(tipoStatusService.buscarPorId(id)));
     }
 
-    @Operation(summary = "Cadastrar novo tipo de status", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Cadastrar novo tipo de status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Status cadastrado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TipoStatusResponse.class))),
@@ -74,7 +74,7 @@ public class TipoStatusController {
         return ResponseEntity.status(201).body(TipoStatusMapper.toResponse(statusSalvo));
     }
 
-    @Operation(summary = "Atualizar tipo de status", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Atualizar tipo de status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TipoStatusResponse.class))),
@@ -92,7 +92,7 @@ public class TipoStatusController {
         return ResponseEntity.ok(TipoStatusMapper.toResponse(salvo));
     }
 
-    @Operation(summary = "Excluir tipo de status", security = @SecurityRequirement(name = "Bearer"))
+    @Operation(summary = "Excluir tipo de status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Status excluído com sucesso", content = @Content),
             @ApiResponse(responseCode = "404", description = "Status não encontrado", content = @Content),
