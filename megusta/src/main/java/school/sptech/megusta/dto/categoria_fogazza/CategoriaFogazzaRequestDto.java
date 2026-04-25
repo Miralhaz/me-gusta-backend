@@ -8,13 +8,13 @@ public class CategoriaFogazzaRequestDto {
     @NotBlank
     @Column(nullable = false)
     @Schema(example = "Salgada")
-    private String sabor;
+    private String nome;
 
-    public String getSabor() {
-        return sabor;
+    public String getNome() {
+        return nome;
     }
 
-    public void setSabor(String sabor) {
-        this.sabor = sabor;
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 }

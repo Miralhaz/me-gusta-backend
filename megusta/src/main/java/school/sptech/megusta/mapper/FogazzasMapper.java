@@ -18,7 +18,7 @@ public class FogazzasMapper {
         FogazzasResponseDto.CategoriaFogazzaDto categoriaDto =
                 new FogazzasResponseDto.CategoriaFogazzaDto();
         categoriaDto.setId(fogazza.getCategoriaFogazza().getId());
-        categoriaDto.setSabor(fogazza.getCategoriaFogazza().getSabor());
+        categoriaDto.setNome(fogazza.getCategoriaFogazza().getNome());
 
         FogazzasResponseDto fogazzasResponseDto = new FogazzasResponseDto();
         fogazzasResponseDto.setId(fogazza.getId());

@@ -13,7 +13,7 @@ public class CategoriaFogazza {
 
     @NotBlank
     @Column(nullable = false)
-    private String sabor;
+    private String nome;
 
     public Integer getId() {
         return id;
@@ -23,11 +23,11 @@ public class CategoriaFogazza {
         this.id = id;
     }
 
-    public String getSabor() {
-        return sabor;
+    public String getNome() {
+        return nome;
     }
 
-    public void setSabor(String sabor) {
-        this.sabor = sabor;
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 }

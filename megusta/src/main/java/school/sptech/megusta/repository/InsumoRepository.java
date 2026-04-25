@@ -5,4 +5,6 @@ import school.sptech.megusta.model.Insumo;
 
 public interface InsumoRepository extends JpaRepository<Insumo, Integer> {
 
+    boolean existsByNomeOrCodigoInsumo(String nome, String codigoInsumo);
+
 }

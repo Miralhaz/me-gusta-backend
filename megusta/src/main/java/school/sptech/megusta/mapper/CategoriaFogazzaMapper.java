@@ -10,14 +10,14 @@ public class CategoriaFogazzaMapper {
 
     public static CategoriaFogazza toEntity(CategoriaFogazzaRequestDto categoriaFogazzaRequestDto){
         CategoriaFogazza categoriaFogazza = new CategoriaFogazza();
-        categoriaFogazza.setSabor(categoriaFogazzaRequestDto.getSabor());
+        categoriaFogazza.setNome(categoriaFogazzaRequestDto.getNome());
         return categoriaFogazza;
     }
 
     public static CategoriaFogazzaResponseDto toResponseDto(CategoriaFogazza categoriaFogazza){
         CategoriaFogazzaResponseDto categoriaFogazzaResponseDto = new CategoriaFogazzaResponseDto();
         categoriaFogazzaResponseDto.setId(categoriaFogazza.getId());
-        categoriaFogazzaResponseDto.setSabor(categoriaFogazza.getSabor());
+        categoriaFogazzaResponseDto.setNome(categoriaFogazza.getNome());
         return categoriaFogazzaResponseDto;
     }
 

@@ -6,5 +6,5 @@ import school.sptech.megusta.model.CategoriaFogazza;
 
 public interface CategoriaFogazzaRepository  extends JpaRepository<CategoriaFogazza, Integer> {
 
-    boolean existsBySabor(String sabor);
+    boolean existsByNome(String nome);
 }

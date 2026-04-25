@@ -1,6 +1,7 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
+import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.Insumo;
@@ -38,6 +39,12 @@ public class InsumoService {
     }
 
     public Insumo cadastrar(Insumo insumo){
+
+        boolean existe = insumoRepository.existsByNomeOrCodigoInsumo(insumo.getNome(), insumo.getCodigoInsumo());
+        if (existe){
+            throw new RecursoConflitoException("Insumo já existe.");
+        }
+
         CategoriaInsumo categoriaInsumo = categoriaInsumoRepository.findById(insumo.getCategoriaInsumo().getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria de insumo não encontrada."));
 
