@@ -14,13 +14,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(FornecedorNaoEncontradoException.class)
-    public ResponseEntity<String> handleNaoEncontrado(FornecedorNaoEncontradoException e) {
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<String> handleNaoEncontrado(RecursoNaoEncontradoException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
-    @ExceptionHandler(FornecedorConflitoException.class)
-    public ResponseEntity<String> handleConflito(FornecedorConflitoException e) {
+    @ExceptionHandler(RecursoConflitoException.class)
+    public ResponseEntity<String> handleConflito(RecursoConflitoException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 
