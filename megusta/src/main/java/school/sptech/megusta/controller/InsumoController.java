@@ -40,6 +40,9 @@ public class InsumoController {
     @GetMapping
     public ResponseEntity<List<InsumoResponse>> listar(){
         List<Insumo> insumos = insumoService.listar();
+        if (insumos.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(InsumoMapper.toResponse(insumos));
     }
 

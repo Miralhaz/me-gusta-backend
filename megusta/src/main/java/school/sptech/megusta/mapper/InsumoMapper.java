@@ -30,6 +30,7 @@ public class InsumoMapper {
 
         response.setId(insumo.getId());
         response.setNome(insumo.getNome());
+        response.setCodigoInsumo(insumo.getCodigoInsumo());
         response.setEstoqueMinimo(insumo.getEstoqueMinimo());
         response.setQuantidadeAtual(insumo.getQuantidadeAtual());
         response.setAtivo(insumo.isAtivo());

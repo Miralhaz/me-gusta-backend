@@ -28,7 +28,7 @@ public class CategoriaFogazzaService {
     }
 
     public CategoriaFogazza cadastrar(CategoriaFogazza categoriaParaCadastrar) {
-        boolean existe = categoriaFogazzaRepository.existsBySabor(categoriaParaCadastrar.getSabor());
+        boolean existe = categoriaFogazzaRepository.existsByNome(categoriaParaCadastrar.getNome());
         if (existe) {
             throw new RecursoConflitoException("Sabor de Fogazza já existe!");
         }
