@@ -1,8 +1,8 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
-import school.sptech.megusta.exception.FornecedorConflitoException;
-import school.sptech.megusta.exception.FornecedorNaoEncontradoException;
+import school.sptech.megusta.exception.RecursoConflitoException;
+import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.Fornecedor;
 import school.sptech.megusta.repository.FornecedorRepository;
 
@@ -25,14 +25,14 @@ public class FornecedorService {
     public Fornecedor cadastrar(Fornecedor fornecedor){
         boolean existe = fornecedorRepository.existsByNomeAndCnpj(fornecedor.getNome(), fornecedor.getCnpj());
         if(existe){
-            throw new FornecedorConflitoException("Fornecedor já existente.");
+            throw new RecursoConflitoException("Fornecedor já existente.");
         }
         return fornecedorRepository.save(fornecedor);
     }
 
     public Fornecedor buscarPorId(Integer id){
         Fornecedor fornecedor = fornecedorRepository.findById(id)
-                .orElseThrow(() -> new FornecedorNaoEncontradoException("Fornecedor não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Fornecedor não encontrado"));
 
         return fornecedor;
     }
@@ -40,10 +40,10 @@ public class FornecedorService {
 
     public Fornecedor atualizar(Integer id, Fornecedor fornecedor){
         fornecedorRepository.findById(id)
-                .orElseThrow(() -> new FornecedorNaoEncontradoException("Fornecedor não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Fornecedor não encontrado"));
 
         if(fornecedorRepository.existsByNomeAndCnpjAndIdNot(fornecedor.getNome(), fornecedor.getCnpj(), id)){
-            throw new FornecedorConflitoException("Fornecedor já existente");
+            throw new RecursoConflitoException("Fornecedor já existente");
         }
         fornecedor.setId(id);
         return fornecedorRepository.save(fornecedor);
@@ -51,7 +51,7 @@ public class FornecedorService {
 
     public void excluir(Integer id){
         fornecedorRepository.findById(id)
-                .orElseThrow(() -> new FornecedorNaoEncontradoException("Fornecedor não encontrado."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Fornecedor não encontrado."));
 
         fornecedorRepository.deleteById(id);
     }

@@ -5,8 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
-import school.sptech.megusta.exception.UsuarioConflitoException;
-import school.sptech.megusta.exception.UsuarioNaoEncontradoException;
+import school.sptech.megusta.exception.RecursoConflitoException;
+import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.mapper.UsuarioMapper;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.repository.UsuarioRepository;
@@ -33,7 +33,7 @@ public class UsuarioService {
     public Usuario buscarPorId(Integer id){
         Optional<Usuario> usuarioOptional = repository.findById(id);
         if(usuarioOptional.isEmpty()){
-            throw new UsuarioNaoEncontradoException(id);
+            throw new RecursoNaoEncontradoException("Usuário não encontrado");
         }
         return usuarioOptional.get();
     }
@@ -45,7 +45,7 @@ public class UsuarioService {
         boolean existe = repository.existsByNomeAndEmail(usuarioParaCadastrar.getNome(),
                 usuarioParaCadastrar.getEmail());
         if(existe){
-           throw new UsuarioConflitoException("Usuário já existe!");
+           throw new RecursoConflitoException("Usuário já existe!");
         }
         Usuario usuarioCadastrado = repository.save(usuarioParaCadastrar);
         return UsuarioMapper.toResponseDto(usuarioCadastrado);
@@ -56,12 +56,12 @@ public class UsuarioService {
         Usuario usuarioParaAtualizar = UsuarioMapper.toEntity(requestDto);
 
         if(!repository.existsById(id)){
-            throw new UsuarioNaoEncontradoException(id);
+            throw new RecursoNaoEncontradoException("Usuário não encontrado");
         }
         boolean existeEmDuplicidade = repository.existsByNomeAndEmailAndIdNot(usuarioParaAtualizar.getNome(),
                 usuarioParaAtualizar.getEmail(), id);
         if(existeEmDuplicidade){
-            throw new UsuarioConflitoException("Usuário já existe!");
+            throw new RecursoConflitoException("Usuário já existe!");
         }
         usuarioParaAtualizar.setId(id);
         Usuario usuarioAtualizado = repository.save(usuarioParaAtualizar);
@@ -71,7 +71,7 @@ public class UsuarioService {
     public void excluir(Integer id){
         boolean existe = repository.existsById(id);
         if(!existe){
-            throw new UsuarioNaoEncontradoException(id);
+            throw new RecursoNaoEncontradoException("Usuário não encontrado");
         }
         repository.deleteById(id);
     }

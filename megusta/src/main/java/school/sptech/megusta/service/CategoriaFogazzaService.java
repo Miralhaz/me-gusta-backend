@@ -1,10 +1,8 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
-import school.sptech.megusta.exception.CategoriaFogazzaConflitoException;
-import school.sptech.megusta.exception.CategoriaFogazzaNaoEncontradaException;
-import school.sptech.megusta.exception.CategoriaInsumoConflitoException;
-import school.sptech.megusta.exception.CategoriaInsumoNaoEncontradaException;
+import school.sptech.megusta.exception.RecursoConflitoException;
+import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaFogazza;
 import school.sptech.megusta.repository.CategoriaFogazzaRepository;
 
@@ -25,14 +23,14 @@ public class CategoriaFogazzaService {
 
     public CategoriaFogazza buscarPorId(Integer id) {
         CategoriaFogazza categoriaFogazza = categoriaFogazzaRepository.findById(id)
-                .orElseThrow(() -> new CategoriaFogazzaNaoEncontradaException("Sabor não encontrado."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Sabor não encontrado."));
         return categoriaFogazza;
     }
 
     public CategoriaFogazza cadastrar(CategoriaFogazza categoriaParaCadastrar) {
         boolean existe = categoriaFogazzaRepository.existsBySabor(categoriaParaCadastrar.getSabor());
         if (existe) {
-            throw new CategoriaFogazzaConflitoException("Sabor de Fogazza já existe!");
+            throw new RecursoConflitoException("Sabor de Fogazza já existe!");
         }
         return categoriaFogazzaRepository.save(categoriaParaCadastrar);
     }
@@ -40,7 +38,7 @@ public class CategoriaFogazzaService {
     public void deletar(Integer id){
         boolean existe = categoriaFogazzaRepository.existsById(id);
         if (!existe){
-            throw new CategoriaFogazzaNaoEncontradaException("Sabor de Fogazza não encontrada.");
+            throw new RecursoNaoEncontradoException("Sabor de Fogazza não encontrada.");
         }
         categoriaFogazzaRepository.deleteById(id);
     }

@@ -1,10 +1,7 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
-import school.sptech.megusta.exception.CategoriaInsumoNaoEncontradaException;
-import school.sptech.megusta.exception.InsumoNaoEncontradoException;
-import school.sptech.megusta.exception.StatusNaoEncontradoException;
-import school.sptech.megusta.exception.UnidadeMedidaNaoEncontradaException;
+import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.model.TipoStatus;
@@ -37,18 +34,18 @@ public class InsumoService {
 
     public Insumo buscarPorId(Integer id){
         return insumoRepository.findById(id)
-                .orElseThrow(() -> new InsumoNaoEncontradoException("Insumo não encontrado."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
     }
 
     public Insumo cadastrar(Insumo insumo){
         CategoriaInsumo categoriaInsumo = categoriaInsumoRepository.findById(insumo.getCategoriaInsumo().getId())
-                .orElseThrow(() -> new CategoriaInsumoNaoEncontradaException("Categoria de insumo não encontrada."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria de insumo não encontrada."));
 
         UnidadeMedida unidadeMedida = unidadeMedidaRepository.findById(insumo.getUnidadeMedida().getId())
-                .orElseThrow(() -> new UnidadeMedidaNaoEncontradaException("Unidade de medida não encontrada."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Unidade de medida não encontrada."));
 
         TipoStatus tipoStatus = tipoStatusRepository.findById(insumo.getTipoStatus().getId())
-                .orElseThrow(() -> new StatusNaoEncontradoException("Status não encontrada."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrada."));
 
         insumo.setCategoriaInsumo(categoriaInsumo);
         insumo.setUnidadeMedida(unidadeMedida);
@@ -59,16 +56,16 @@ public class InsumoService {
     public Insumo atualizar(Insumo insumo, Integer id){
 
         Insumo insumoExistente = insumoRepository.findById(id)
-                .orElseThrow(() -> new InsumoNaoEncontradoException("Insumo não encontrado."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
 
         CategoriaInsumo categoriaInsumo = categoriaInsumoRepository.findById(insumo.getCategoriaInsumo().getId())
-                .orElseThrow(() -> new CategoriaInsumoNaoEncontradaException("Categoria de insumo não encontrada."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria de insumo não encontrada."));
 
         UnidadeMedida unidadeMedida = unidadeMedidaRepository.findById(insumo.getUnidadeMedida().getId())
-                .orElseThrow(() -> new UnidadeMedidaNaoEncontradaException("Unidade de medida não encontrada."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Unidade de medida não encontrada."));
 
         TipoStatus tipoStatus = tipoStatusRepository.findById(insumo.getTipoStatus().getId())
-                .orElseThrow(() -> new StatusNaoEncontradoException("Status não encontrado."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrado."));
 
         insumoExistente.setId(id);
         insumoExistente.setCategoriaInsumo(categoriaInsumo);
