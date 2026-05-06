@@ -4,9 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
 public class FogazzasRequestDto {
 
     @NotBlank
@@ -21,28 +25,4 @@ public class FogazzasRequestDto {
     @NotNull
     @Schema(example = "1")
     private Integer categoriaFogazzaId;
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public BigDecimal getPreco() {
-        return preco;
-    }
-
-    public void setPreco(BigDecimal preco) {
-        this.preco = preco;
-    }
-
-    public Integer getCategoriaFogazzaId() {
-        return categoriaFogazzaId;
-    }
-
-    public void setCategoriaFogazzaId(Integer categoriaFogazzaId) {
-        this.categoriaFogazzaId = categoriaFogazzaId;
-    }
 }
