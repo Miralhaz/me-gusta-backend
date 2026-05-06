@@ -1,7 +1,11 @@
 package school.sptech.megusta.dto.unidade_medida;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class UnidadeMedidaResponse {
 
     @Schema(example = "1")
@@ -9,20 +13,4 @@ public class UnidadeMedidaResponse {
 
     @Schema(example = "kg")
     private String unidade;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUnidade() {
-        return unidade;
-    }
-
-    public void setUnidade(String unidade) {
-        this.unidade = unidade;
-    }
 }

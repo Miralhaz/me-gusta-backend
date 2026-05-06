@@ -4,7 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class InsumoRequest {
 
     @NotBlank
@@ -43,67 +47,4 @@ public class InsumoRequest {
     @Schema(example = "1")
     private Integer fkStatus;
 
-    public Integer getFkStatus() {
-        return fkStatus;
-    }
-
-    public void setFkStatus(Integer fkStatus) {
-        this.fkStatus = fkStatus;
-    }
-
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public String getCodigoInsumo() {
-        return codigoInsumo;
-    }
-
-    public void setCodigoInsumo(String codigoInsumo) {
-        this.codigoInsumo = codigoInsumo;
-    }
-
-    public Double getEstoqueMinimo() {
-        return estoqueMinimo;
-    }
-
-    public void setEstoqueMinimo(Double estoqueMinimo) {
-        this.estoqueMinimo = estoqueMinimo;
-    }
-
-    public Integer getFkCategoriaInsumo() {
-        return fkCategoriaInsumo;
-    }
-
-    public void setFkCategoriaInsumo(Integer fkCategoriaInsumo) {
-        this.fkCategoriaInsumo = fkCategoriaInsumo;
-    }
-
-    public Integer getFkUnidadeMedida() {
-        return fkUnidadeMedida;
-    }
-
-    public void setFkUnidadeMedida(Integer fkUnidadeMedida) {
-        this.fkUnidadeMedida = fkUnidadeMedida;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public Double getQuantidadeAtual() {
-        return quantidadeAtual;
-    }
-
-    public void setQuantidadeAtual(Double quantidadeAtual) {
-        this.quantidadeAtual = quantidadeAtual;
-    }
 }
