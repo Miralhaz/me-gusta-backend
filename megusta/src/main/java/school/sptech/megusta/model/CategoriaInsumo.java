@@ -2,9 +2,17 @@ package school.sptech.megusta.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "categoria_insumo")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CategoriaInsumo {
 
     @Id
@@ -14,28 +22,4 @@ public class CategoriaInsumo {
     @NotBlank
     @Column(nullable = false)
     private String nome;
-
-    public CategoriaInsumo(Integer id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
-
-    public CategoriaInsumo() {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
 }

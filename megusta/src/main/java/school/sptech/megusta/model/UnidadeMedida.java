@@ -2,9 +2,13 @@ package school.sptech.megusta.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "unidade_medida")
+@Getter
+@Setter
 public class UnidadeMedida {
 
     @Id
@@ -14,20 +18,4 @@ public class UnidadeMedida {
     @NotBlank
     @Column(nullable = false)
     private String unidade;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getUnidade() {
-        return unidade;
-    }
-
-    public void setUnidade(String unidade) {
-        this.unidade = unidade;
-    }
 }

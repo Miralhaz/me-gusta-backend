@@ -2,9 +2,17 @@ package school.sptech.megusta.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class TipoStatus {
 
     @Id
@@ -15,27 +23,4 @@ public class TipoStatus {
     @Column(nullable = false)
     private String nome;
 
-    public TipoStatus() {
-    }
-
-    public TipoStatus(Integer id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
 }
