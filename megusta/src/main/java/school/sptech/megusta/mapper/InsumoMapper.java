@@ -32,7 +32,7 @@ public class InsumoMapper {
         response.setNome(insumo.getNome());
         response.setCodigoInsumo(insumo.getCodigoInsumo());
         response.setEstoqueMinimo(insumo.getEstoqueMinimo());
-        response.setQuantidadeAtual(insumo.getQuantidadeAtual());
+        response.setQuantidadeAtual(insumo.getQtdAtual());
         response.setAtivo(insumo.isAtivo());
         response.setInsumoCategoria(insumoCategoria);
         response.setUnidadeInsumo(unidadeInsumo);
@@ -48,7 +48,7 @@ public class InsumoMapper {
         insumo.setNome(request.getNome());
         insumo.setCodigoInsumo(request.getCodigoInsumo());
         insumo.setEstoqueMinimo(request.getEstoqueMinimo());
-        insumo.setQuantidadeAtual(request.getQuantidadeAtual());
+        insumo.setQtdAtual(request.getQuantidadeAtual());
         insumo.setAtivo(request.isAtivo());
 
         CategoriaInsumo categoriaInsumo = new CategoriaInsumo();
