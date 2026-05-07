@@ -3,9 +3,13 @@ package school.sptech.megusta.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "categoria_fogazza")
+@Getter
+@Setter
 public class CategoriaFogazza {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,19 +19,4 @@ public class CategoriaFogazza {
     @Column(nullable = false)
     private String nome;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
 }
