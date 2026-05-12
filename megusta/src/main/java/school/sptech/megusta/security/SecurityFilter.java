@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import school.sptech.megusta.exception.TokenInvalidoException;
-import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.repository.UsuarioRepository;
 
 import java.io.IOException;
@@ -34,7 +33,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (tokenJWT != null) {
             try {
                 String subject = tokenService.getSubject(tokenJWT);
-                UserDetails usuario = usuarioRepository.findByNome(subject);
+                UserDetails usuario = usuarioRepository.findByEmail(subject);
 
                 if (usuario != null) {
                     UsernamePasswordAuthenticationToken authenticationToken =
