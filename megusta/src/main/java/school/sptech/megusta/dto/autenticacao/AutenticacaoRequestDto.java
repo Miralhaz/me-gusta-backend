@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 public class AutenticacaoRequestDto {
 
     @NotBlank
-    @Schema(example = "Breno Costa")
+    @Schema(example = "breno@megusta.com")
     private String login;
 
     @NotBlank
