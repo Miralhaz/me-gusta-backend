@@ -32,13 +32,13 @@ public class OpenApiConfig {
                         : "<img src='data:image/png;base64," + logoBase64 + "' width='200' height='200' alt='Me Gusta Logo'>";
                 return new OpenAPI()
                         .components(new Components()
-                                .addSecuritySchemes("bearerAuth",
+                                .addSecuritySchemes("Bearer",
                                         new SecurityScheme()
                                                 .type(SecurityScheme.Type.HTTP)
-                                                .scheme("bearer")
+                                                .scheme("Bearer")
                                                 .bearerFormat("JWT")
                                                 .in(SecurityScheme.In.HEADER)))
-                        .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                        .addSecurityItem(new SecurityRequirement().addList("Bearer"))
                         .info(new Info()
                                 .title("Projeto Me Gusta")
                                 .version("2.0.0")
