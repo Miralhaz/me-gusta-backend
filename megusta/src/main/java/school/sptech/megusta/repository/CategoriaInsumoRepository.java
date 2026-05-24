@@ -5,6 +5,8 @@ import school.sptech.megusta.model.CategoriaInsumo;
 
 public interface CategoriaInsumoRepository extends JpaRepository<CategoriaInsumo, Integer> {
 
-    boolean existsByNome(String nome);
+    boolean existsByNomeIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCaseAndIdNot(String nome, Integer id);
 
 }

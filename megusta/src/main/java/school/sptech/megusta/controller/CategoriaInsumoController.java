@@ -12,8 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
+import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.mapper.CategoriaInsumoMapper;
+import school.sptech.megusta.mapper.InsumoMapper;
 import school.sptech.megusta.model.CategoriaInsumo;
+import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.service.CategoriaInsumoService;
 
 import java.util.List;
@@ -75,6 +78,25 @@ public class CategoriaInsumoController {
         return ResponseEntity.status(201).body(CategoriaInsumoMapper.toResponseDto(categoriaCadastrada));
     }
 
+    @Operation(summary = "Atualizar categoria de insumo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Categoria atualizada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoriaInsumoResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Categoria não encontrada", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Categoria já cadastrada", content = @Content)
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoriaInsumoResponseDto> atualizar(
+            @PathVariable Integer id,
+            @RequestBody @Valid CategoriaInsumoRequestDto request
+    ){
+        CategoriaInsumo categoriaAtualizada = CategoriaInsumoMapper.toEntity(request);
+        CategoriaInsumo categoriaSalva = service.atualizar(id, categoriaAtualizada);
+        return ResponseEntity.ok(CategoriaInsumoMapper.toResponseDto(categoriaSalva));
+    }
+
     @Operation(summary = "Excluir categoria de insumo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Categoria excluída com sucesso", content = @Content),
@@ -85,5 +107,22 @@ public class CategoriaInsumoController {
     public ResponseEntity<Void> deletar(@PathVariable Integer id){
         service.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/insumos")
+    @Operation(summary = "Listar insumos de uma categoria específica")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Insumos retornados com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
+            @ApiResponse(responseCode = "204", description = "Nenhum insumo nessa categoria", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Categoria não encontrada", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    public ResponseEntity<List<InsumoResponse>> listarInsumoDaCategoria(@PathVariable Integer id){
+        List<Insumo> insumos = service.listarInsumosPorCategoria(id);
+        if (insumos.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(InsumoMapper.toResponse(insumos));
     }
 }
