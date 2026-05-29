@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
+import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaRequestDto;
+import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaResponseDto;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.mapper.CategoriaInsumoMapper;
 import school.sptech.megusta.mapper.InsumoMapper;
@@ -124,5 +126,13 @@ public class CategoriaInsumoController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(InsumoMapper.toResponse(insumos));
+    }
+
+    @PostMapping("/consumo")
+    @Operation(summary = "Calcular o consumo total dos insumos de uma categoria nos últimos x dias")
+    public ResponseEntity<List<ConsumoCategoriaResponseDto>> calcularConsumoPorCategoria(
+            @RequestBody @Valid ConsumoCategoriaRequestDto request
+    ){
+        return ResponseEntity.ok(service.calcularConsumoPorCategoriaNosUltimosDias(request));
     }
 }
