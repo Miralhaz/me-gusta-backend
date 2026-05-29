@@ -1,6 +1,8 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
+import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaRequestDto;
+import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaResponseDto;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
@@ -8,6 +10,7 @@ import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.repository.CategoriaInsumoRepository;
 import school.sptech.megusta.repository.InsumoRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -77,5 +80,13 @@ public class CategoriaInsumoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria não encontrada."));
 
         return insumoRepository.findByCategoriaInsumoId(categoriaId);
+    }
+
+    public List<ConsumoCategoriaResponseDto> calcularConsumoPorCategoriaNosUltimosDias(ConsumoCategoriaRequestDto request){
+        String nomeCategoria = request.getNomeCategoria();
+        Integer intervalo = request.getIntervalo();
+        LocalDateTime diasAtras = LocalDateTime.now().minusDays(intervalo);
+
+        return categoriaInsumoRepository.consumoPorCategoriaEspecifica(nomeCategoria, diasAtras);
     }
 }
