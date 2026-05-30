@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -15,5 +15,5 @@ import java.time.LocalDateTime;
 public class ConsumoCategoriaResponseDto {
 
     private BigDecimal quantidade;
-    private LocalDateTime dtConsumo;
+    private LocalDate dtConsumo;
 }

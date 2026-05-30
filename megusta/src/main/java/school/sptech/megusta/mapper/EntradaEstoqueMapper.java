@@ -12,7 +12,8 @@ public class EntradaEstoqueMapper {
         EntradaEstoqueResponse response = new EntradaEstoqueResponse();
 
         response.setId(entradaEstoque.getId());
-        response.setQuantidade(entradaEstoque.getQuantidade());
+        response.setQuantidadeAbsoluta(entradaEstoque.getQuantidadeAbsoluta());
+        response.setQuantidadeRelativa(entradaEstoque.getQuantidadeRelativa());
         response.setDtEntrada(entradaEstoque.getDtEntrada());
         response.setLote(entradaEstoque.getLote());
         response.setDtValidade(entradaEstoque.getDtValidade());
@@ -53,7 +54,8 @@ public class EntradaEstoqueMapper {
     public static EntradaEstoque toEntity(EntradaEstoqueRequest request) {
         EntradaEstoque entradaEstoque = new EntradaEstoque();
 
-        entradaEstoque.setQuantidade(request.getQuantidade());
+        entradaEstoque.setQuantidadeAbsoluta(request.getQuantidadeAbsoluta());
+        entradaEstoque.setQuantidadeRelativa(request.getQuantidadeRelativa());
         entradaEstoque.setLote(request.getLote());
         entradaEstoque.setDtValidade(request.getDtValidade());
         entradaEstoque.setDtPedido(request.getDtPedido());

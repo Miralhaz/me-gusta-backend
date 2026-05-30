@@ -25,6 +25,8 @@ public class SaidaEstoqueRequest implements Serializable {
     @Positive
     private BigDecimal quantidade;
 
-    private LocalDateTime dtSaida;
+    @NotNull
+    @Positive
+    private Integer fkMotivo;
 
 }

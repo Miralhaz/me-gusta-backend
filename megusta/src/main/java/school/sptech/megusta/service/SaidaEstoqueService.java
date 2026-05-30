@@ -3,9 +3,11 @@ package school.sptech.megusta.service;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.Insumo;
+import school.sptech.megusta.model.Motivo;
 import school.sptech.megusta.model.SaidaEstoque;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.repository.InsumoRepository;
+import school.sptech.megusta.repository.MotivoRepository;
 import school.sptech.megusta.repository.SaidaEstoqueRepository;
 import school.sptech.megusta.repository.UsuarioRepository;
 
@@ -18,13 +20,15 @@ public class SaidaEstoqueService {
     private final SaidaEstoqueRepository saidaRepo;
     private final InsumoRepository insumoRepo;
     private final UsuarioRepository usuarioRepo;
+    private final MotivoRepository motivoRepo;
 
     public SaidaEstoqueService(SaidaEstoqueRepository saidaRepo,
                                InsumoRepository insumoRepo,
-                               UsuarioRepository usuarioRepo) {
+                               UsuarioRepository usuarioRepo, MotivoRepository motivoRepo) {
         this.saidaRepo = saidaRepo;
         this.insumoRepo = insumoRepo;
         this.usuarioRepo = usuarioRepo;
+        this.motivoRepo = motivoRepo;
     }
 
     public List<SaidaEstoque> listar() {
@@ -41,9 +45,12 @@ public class SaidaEstoqueService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
         Usuario usuario = usuarioRepo.findById(novaSaida.getUsuario().getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+        Motivo motivo = motivoRepo.findById(novaSaida.getMotivo().getId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Motivo não encontrado."));
 
         novaSaida.setInsumo(insumo);
         novaSaida.setUsuario(usuario);
+        novaSaida.setMotivo(motivo);
 
         if (novaSaida.getDtSaida() == null) {
             novaSaida.setDtSaida(LocalDateTime.now());
@@ -60,9 +67,12 @@ public class SaidaEstoqueService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
         Usuario usuario = usuarioRepo.findById(saidaAtualizada.getUsuario().getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+        Motivo motivo = motivoRepo.findById(saidaAtualizada.getMotivo().getId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Motivo não encontrado."));
 
         existente.setInsumo(insumo);
         existente.setUsuario(usuario);
+        existente.setMotivo(motivo);
         existente.setQuantidade(saidaAtualizada.getQuantidade());
 
         if (saidaAtualizada.getDtSaida() != null) {

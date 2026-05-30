@@ -36,4 +36,8 @@ public class SaidaEstoque {
     @CreationTimestamp
     @Column(name = "dt_saida", nullable = false, updatable = false)
     private LocalDateTime dtSaida;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_motivo", nullable = false)
+    private Motivo motivo;
 }
