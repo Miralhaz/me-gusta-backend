@@ -27,7 +27,10 @@ public class EntradaEstoqueResponse implements Serializable {
     private UnidadeMedidaEntrada unidadeMedida;
 
     @Schema(example = "1.50")
-    private BigDecimal quantidade;
+    private BigDecimal quantidadeAbsoluta;
+
+    @Schema(example = "1.50")
+    private BigDecimal quantidadeRelativa;
 
     @Schema(example = "2025-05-25T14:30:00")
     private LocalDateTime dtEntrada;

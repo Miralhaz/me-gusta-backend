@@ -21,6 +21,8 @@ public class SaidaEstoqueResponse implements Serializable {
 
     private LocalDateTime dtSaida;
 
+    private MotivoSaida motivo;
+
     @Getter
     @Setter
     public static class InsumoSaida {
@@ -31,6 +33,13 @@ public class SaidaEstoqueResponse implements Serializable {
     @Getter
     @Setter
     public static class UsuarioSaida {
+        private Integer id;
+        private String nome;
+    }
+
+    @Getter
+    @Setter
+    public static class MotivoSaida{
         private Integer id;
         private String nome;
     }

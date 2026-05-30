@@ -91,7 +91,8 @@ public class EntradaEstoqueService {
         entradaExistente.setFornecedor(fornecedor);
         entradaExistente.setTipoStatus(tipoStatus);
         entradaExistente.setUnidadeMedida(unidadeMedida);
-        entradaExistente.setQuantidade(entradaEstoque.getQuantidade());
+        entradaExistente.setQuantidadeAbsoluta(entradaEstoque.getQuantidadeAbsoluta());
+        entradaExistente.setQuantidadeRelativa(entradaEstoque.getQuantidadeRelativa());
         entradaExistente.setLote(entradaEstoque.getLote());
         entradaExistente.setDtValidade(entradaEstoque.getDtValidade());
         entradaExistente.setDtPedido(entradaEstoque.getDtPedido());

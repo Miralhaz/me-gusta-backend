@@ -44,7 +44,12 @@ public class EntradaEstoque {
     @NotNull
     @Positive
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal quantidade;
+    private BigDecimal quantidadeAbsoluta;
+
+    @NotNull
+    @Positive
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal quantidadeRelativa;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

@@ -3,6 +3,7 @@ package school.sptech.megusta.mapper;
 import school.sptech.megusta.dto.saida_estoque.SaidaEstoqueRequest;
 import school.sptech.megusta.dto.saida_estoque.SaidaEstoqueResponse;
 import school.sptech.megusta.model.Insumo;
+import school.sptech.megusta.model.Motivo;
 import school.sptech.megusta.model.SaidaEstoque;
 import school.sptech.megusta.model.Usuario;
 
@@ -21,10 +22,11 @@ public class SaidaEstoqueMapper {
         usuario.setId(request.getFkUsuario());
         entity.setUsuario(usuario);
 
+        Motivo motivo = new Motivo();
+        motivo.setId(request.getFkMotivo());
+        entity.setMotivo(motivo);
+
         entity.setQuantidade(request.getQuantidade());
-        if (request.getDtSaida() != null) {
-            entity.setDtSaida(request.getDtSaida());
-        }
 
         return entity;
     }
@@ -48,6 +50,13 @@ public class SaidaEstoqueMapper {
             usuario.setNome(entity.getUsuario().getNome());
         }
         resp.setUsuario(usuario);
+
+        SaidaEstoqueResponse.MotivoSaida motivo = new SaidaEstoqueResponse.MotivoSaida();
+        if (entity.getMotivo() != null) {
+            motivo.setId(entity.getMotivo().getId());
+            motivo.setNome(entity.getMotivo().getNome());
+        }
+        resp.setMotivo(motivo);
 
         return resp;
     }

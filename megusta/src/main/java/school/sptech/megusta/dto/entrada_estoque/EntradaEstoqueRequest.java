@@ -42,7 +42,12 @@ public class EntradaEstoqueRequest implements Serializable {
     @NotNull
     @Positive
     @Schema(example = "1.50")
-    private BigDecimal quantidade;
+    private BigDecimal quantidadeAbsoluta;
+
+    @NotNull
+    @Positive
+    @Schema(example = "1.50")
+    private BigDecimal quantidadeRelativa;
 
     @Schema(example = "LOTE-001")
     private String lote;
