@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaRequestDto;
+import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaResponseDto;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
@@ -16,6 +18,7 @@ import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.repository.CategoriaInsumoRepository;
 import school.sptech.megusta.repository.InsumoRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -337,18 +340,65 @@ class CategoriaInsumoServiceTest {
             Mockito.verify(insumoRepository, Mockito.times(1)).findByCategoriaInsumoId(id);
         }
 
-        @Test
-        @DisplayName("Deve lançar exception caso categoria não encontrada")
-        void deveLancarExceptionCasoCategoriaNotFound() {
-            Integer id = 1;
+         @Test
+         @DisplayName("Deve lançar exception caso categoria não encontrada")
+         void deveLancarExceptionCasoCategoriaNotFound() {
+             Integer id = 1;
 
-            Mockito.when(categoriaInsumoRepository.findById(id))
-                    .thenReturn(Optional.empty());
+             Mockito.when(categoriaInsumoRepository.findById(id))
+                     .thenReturn(Optional.empty());
 
             Assertions.assertThrows(RecursoNaoEncontradoException.class,
                     () -> categoriaInsumoService.listarInsumosPorCategoria(id));
             Mockito.verify(categoriaInsumoRepository, Mockito.times(1)).findById(id);
             Mockito.verify(insumoRepository, Mockito.never()).findByCategoriaInsumoId(id);
+        }
+    }
+
+    @Nested
+    @DisplayName("Método calcularConsumoPorCategoriaNosUltimosDias")
+    class CalcularConsumoPorCategoria {
+
+        @Test
+        @DisplayName("Deve calcular consumo corretamente")
+        void deveCalcularConsumoCorretamente() {
+            ConsumoCategoriaRequestDto request = new ConsumoCategoriaRequestDto();
+            request.setNomeCategoria("Frios");
+            request.setIntervalo(7);
+
+            List<ConsumoCategoriaResponseDto> consumoList = List.of(
+                    new ConsumoCategoriaResponseDto(new java.math.BigDecimal("10"), java.time.LocalDate.now())
+            );
+
+            Mockito.when(categoriaInsumoRepository.consumoPorCategoriaEspecifica(
+                    Mockito.eq("Frios"), Mockito.any(java.time.LocalDateTime.class)
+            )).thenReturn(consumoList);
+
+            List<ConsumoCategoriaResponseDto> resultado = categoriaInsumoService.calcularConsumoPorCategoriaNosUltimosDias(request);
+
+            Assertions.assertEquals(consumoList, resultado);
+            Mockito.verify(categoriaInsumoRepository, Mockito.times(1))
+                    .consumoPorCategoriaEspecifica(Mockito.eq("Frios"), Mockito.any(java.time.LocalDateTime.class));
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não houver consumo")
+        void deveRetornarListaVazia() {
+            ConsumoCategoriaRequestDto request = new ConsumoCategoriaRequestDto();
+            request.setNomeCategoria("Frios");
+            request.setIntervalo(7);
+
+            List<ConsumoCategoriaResponseDto> consumoList = new ArrayList<>();
+
+            Mockito.when(categoriaInsumoRepository.consumoPorCategoriaEspecifica(
+                    Mockito.eq("Frios"), Mockito.any(java.time.LocalDateTime.class)
+            )).thenReturn(consumoList);
+
+            List<ConsumoCategoriaResponseDto> resultado = categoriaInsumoService.calcularConsumoPorCategoriaNosUltimosDias(request);
+
+            Assertions.assertTrue(resultado.isEmpty());
+            Mockito.verify(categoriaInsumoRepository, Mockito.times(1))
+                    .consumoPorCategoriaEspecifica(Mockito.eq("Frios"), Mockito.any(java.time.LocalDateTime.class));
         }
     }
 }
