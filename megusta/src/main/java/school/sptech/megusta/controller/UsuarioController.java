@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
 import school.sptech.megusta.mapper.UsuarioMapper;
@@ -18,6 +19,7 @@ import school.sptech.megusta.service.UsuarioService;
 import java.util.List;
 
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/usuarios")
 @Tag(name = "02. Usuários", description = "Gerenciamento de perfis de usuários e upload de imagens")
