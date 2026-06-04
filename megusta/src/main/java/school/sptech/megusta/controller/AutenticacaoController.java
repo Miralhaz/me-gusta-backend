@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import school.sptech.megusta.dto.autenticacao.TokenJWTResponseDto;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.security.TokenService;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/login")
 @Tag(name = "01. Autenticação", description = "Endpoints para controle de acesso e geração de tokens JWT")
