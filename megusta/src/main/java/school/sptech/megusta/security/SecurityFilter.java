@@ -2,6 +2,7 @@ package school.sptech.megusta.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,14 @@ public class SecurityFilter extends OncePerRequestFilter {
             return authorizationHeader.replace("Bearer ", "");
         }
 
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("token")) {
+                    return cookie.getValue();
+                }
+            }
+        }
         return null;
     }
 }
