@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/vendas")
 @RequiredArgsConstructor
+@Tag(name = "12. Vendas", description = "Gerenciamento de vendas")
 public class VendasController {
 
     private final VendasService vendasService;

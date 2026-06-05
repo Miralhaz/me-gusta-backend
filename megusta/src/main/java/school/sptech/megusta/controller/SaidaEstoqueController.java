@@ -1,5 +1,6 @@
 package school.sptech.megusta.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/saidas-estoque")
+@Tag(name = "11. Saídas de Estoque", description = "Gerenciamento de saídas de produtos do estoque")
 public class SaidaEstoqueController {
 
     private final SaidaEstoqueService service;
