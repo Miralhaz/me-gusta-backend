@@ -14,6 +14,8 @@ import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
 import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaRequestDto;
 import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaResponseDto;
+import school.sptech.megusta.dto.consumo_geral_categoria.ConsumoGeralCategoriaResponseDto;
+import school.sptech.megusta.dto.consumo_geral_categoria.ConsumoGeralRequestDto;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.mapper.CategoriaInsumoMapper;
 import school.sptech.megusta.mapper.InsumoMapper;
@@ -130,9 +132,31 @@ public class CategoriaInsumoController {
 
     @PostMapping("/consumo")
     @Operation(summary = "Calcular o consumo total dos insumos de uma categoria nos últimos x dias")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Consumo calculado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
     public ResponseEntity<List<ConsumoCategoriaResponseDto>> calcularConsumoPorCategoria(
             @RequestBody @Valid ConsumoCategoriaRequestDto request
     ){
         return ResponseEntity.ok(service.calcularConsumoPorCategoriaNosUltimosDias(request));
     }
+
+
+
+    @PostMapping("/consumo/geral")
+    @Operation(summary = "Calcular o consumo de todas as categorias nos últimos x dias")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Consumo geral calculado com sucesso"),
+            @ApiResponse(responseCode = "204", description = "Nenhum consumo registrado no período", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    public ResponseEntity<List<ConsumoGeralCategoriaResponseDto>> calcularConsumoGeral(
+            @RequestBody @Valid ConsumoGeralRequestDto request
+    ) {
+        return ResponseEntity.ok(service.calcularConsumoGeralNosUltimosDias(request));
+    }
+
 }

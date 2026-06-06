@@ -3,6 +3,9 @@ package school.sptech.megusta.service;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaRequestDto;
 import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaResponseDto;
+import school.sptech.megusta.dto.consumo_geral_categoria.ConsumoGeralCategoriaResponseDto;
+import school.sptech.megusta.dto.consumo_geral_categoria.ConsumoGeralRequestDto;
+import school.sptech.megusta.dto.consumo_intermediario_categoria.ConsumoIntermediarioCategoriaResponseDto;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
@@ -12,6 +15,8 @@ import school.sptech.megusta.repository.InsumoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoriaInsumoService {
@@ -88,5 +93,19 @@ public class CategoriaInsumoService {
         LocalDateTime diasAtras = LocalDateTime.now().minusDays(intervalo);
 
         return categoriaInsumoRepository.consumoPorCategoriaEspecifica(nomeCategoria, diasAtras);
+    }
+
+    public List<ConsumoGeralCategoriaResponseDto> calcularConsumoGeralNosUltimosDias(ConsumoGeralRequestDto request) {
+        LocalDateTime diasAtras = LocalDateTime.now().minusDays(request.getIntervalo());
+
+        List<ConsumoIntermediarioCategoriaResponseDto> linhasPlanas = categoriaInsumoRepository.consumoPorTodasAsCategorias(diasAtras);
+
+        // Agrupa as linhas por categoria e monta o DTO final
+        Map<String, List<ConsumoIntermediarioCategoriaResponseDto>> agrupado = linhasPlanas.stream()
+                .collect(Collectors.groupingBy(ConsumoIntermediarioCategoriaResponseDto::getNomeCategoria));
+
+        return agrupado.entrySet().stream()
+                .map(entry -> new ConsumoGeralCategoriaResponseDto(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 }
