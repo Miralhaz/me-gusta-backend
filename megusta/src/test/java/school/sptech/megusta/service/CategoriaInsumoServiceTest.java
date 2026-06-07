@@ -11,6 +11,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaRequestDto;
 import school.sptech.megusta.dto.consumo_categoria.ConsumoCategoriaResponseDto;
+import school.sptech.megusta.dto.consumo_geral_categoria.ConsumoGeralCategoriaResponseDto;
+import school.sptech.megusta.dto.consumo_geral_categoria.ConsumoGeralRequestDto;
+import school.sptech.megusta.dto.consumo_intermediario_categoria.ConsumoIntermediarioCategoriaResponseDto;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
@@ -399,6 +402,85 @@ class CategoriaInsumoServiceTest {
             Assertions.assertTrue(resultado.isEmpty());
             Mockito.verify(categoriaInsumoRepository, Mockito.times(1))
                     .consumoPorCategoriaEspecifica(Mockito.eq("Frios"), Mockito.any(java.time.LocalDateTime.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Método calcularConsumoGeralNosUltimosDias")
+    class CalcularConsumoGeral {
+
+        @Test
+        @DisplayName("Deve calcular consumo geral corretamente agrupando por categoria")
+        void deveCalcularConsumoGeralCorretamente() {
+            ConsumoGeralRequestDto request = new ConsumoGeralRequestDto();
+            request.setIntervalo(7);
+
+            ConsumoIntermediarioCategoriaResponseDto linha1 = new ConsumoIntermediarioCategoriaResponseDto(
+                    new java.math.BigDecimal("10"), java.time.LocalDate.now(), "Frios"
+            );
+            ConsumoIntermediarioCategoriaResponseDto linha2 = new ConsumoIntermediarioCategoriaResponseDto(
+                    new java.math.BigDecimal("5"), java.time.LocalDate.now().minusDays(1), "Frios"
+            );
+
+            List<ConsumoIntermediarioCategoriaResponseDto> linhasPlanas = List.of(linha1, linha2);
+
+            Mockito.when(categoriaInsumoRepository.consumoPorTodasAsCategorias(
+                    Mockito.any(LocalDateTime.class)
+            )).thenReturn(linhasPlanas);
+
+            List<ConsumoGeralCategoriaResponseDto> resultado =
+                    categoriaInsumoService.calcularConsumoGeralNosUltimosDias(request);
+
+            Assertions.assertEquals(1, resultado.size());
+            Assertions.assertEquals("Frios", resultado.get(0).getNomeCategoria());
+            Assertions.assertEquals(2, resultado.get(0).getConsumos().size());
+            Mockito.verify(categoriaInsumoRepository, Mockito.times(1))
+                    .consumoPorTodasAsCategorias(Mockito.any(LocalDateTime.class));
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não houver consumo")
+        void deveRetornarListaVazia() {
+            ConsumoGeralRequestDto request = new ConsumoGeralRequestDto();
+            request.setIntervalo(7);
+
+            Mockito.when(categoriaInsumoRepository.consumoPorTodasAsCategorias(
+                    Mockito.any(LocalDateTime.class)
+            )).thenReturn(new ArrayList<>());
+
+            List<ConsumoGeralCategoriaResponseDto> resultado =
+                    categoriaInsumoService.calcularConsumoGeralNosUltimosDias(request);
+
+            Assertions.assertTrue(resultado.isEmpty());
+            Mockito.verify(categoriaInsumoRepository, Mockito.times(1))
+                    .consumoPorTodasAsCategorias(Mockito.any(LocalDateTime.class));
+        }
+
+        @Test
+        @DisplayName("Deve agrupar corretamente múltiplas categorias distintas")
+        void deveAgruparMultiplasCategoriasDistintas() {
+            ConsumoGeralRequestDto request = new ConsumoGeralRequestDto();
+            request.setIntervalo(30);
+
+            ConsumoIntermediarioCategoriaResponseDto linhaFrios = new ConsumoIntermediarioCategoriaResponseDto(
+                    new java.math.BigDecimal("8"), java.time.LocalDate.now(), "Frios"
+            );
+            ConsumoIntermediarioCategoriaResponseDto linhaCarnes = new ConsumoIntermediarioCategoriaResponseDto(
+                    new java.math.BigDecimal("12"), java.time.LocalDate.now(), "Carnes"
+            );
+
+            List<ConsumoIntermediarioCategoriaResponseDto> linhasPlanas = List.of(linhaFrios, linhaCarnes);
+
+            Mockito.when(categoriaInsumoRepository.consumoPorTodasAsCategorias(
+                    Mockito.any(LocalDateTime.class)
+            )).thenReturn(linhasPlanas);
+
+            List<ConsumoGeralCategoriaResponseDto> resultado =
+                    categoriaInsumoService.calcularConsumoGeralNosUltimosDias(request);
+
+            Assertions.assertEquals(2, resultado.size());
+            Mockito.verify(categoriaInsumoRepository, Mockito.times(1))
+                    .consumoPorTodasAsCategorias(Mockito.any(LocalDateTime.class));
         }
     }
 }

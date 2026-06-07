@@ -19,6 +19,7 @@ import school.sptech.megusta.repository.MotivoRepository;
 import school.sptech.megusta.repository.SaidaEstoqueRepository;
 import school.sptech.megusta.repository.UsuarioRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,6 +112,7 @@ class SaidaEstoqueServiceTest {
         void deveCadastrarCorretamente() {
             Insumo insumo = new Insumo();
             insumo.setId(1);
+            insumo.setQtdAtual(20.0);
 
             Usuario usuario = new Usuario();
             usuario.setId(1);
@@ -122,6 +124,7 @@ class SaidaEstoqueServiceTest {
             saida.setInsumo(insumo);
             saida.setUsuario(usuario);
             saida.setMotivo(motivo);
+            saida.setQuantidade(BigDecimal.valueOf(5.0));
             saida.setDtSaida(null);
 
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
@@ -214,6 +217,7 @@ class SaidaEstoqueServiceTest {
 
             Insumo insumo = new Insumo();
             insumo.setId(1);
+            insumo.setQtdAtual(20.0);
 
             Usuario usuario = new Usuario();
             usuario.setId(1);
@@ -225,6 +229,7 @@ class SaidaEstoqueServiceTest {
             saida.setInsumo(insumo);
             saida.setUsuario(usuario);
             saida.setMotivo(motivo);
+            saida.setQuantidade(BigDecimal.valueOf(5.0));
             saida.setDtSaida(dataExistente);
 
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
@@ -250,6 +255,7 @@ class SaidaEstoqueServiceTest {
 
             Insumo insumo = new Insumo();
             insumo.setId(1);
+            insumo.setQtdAtual(20.0);
 
             Usuario usuario = new Usuario();
             usuario.setId(1);
@@ -262,6 +268,7 @@ class SaidaEstoqueServiceTest {
             saida.setInsumo(insumo);
             saida.setUsuario(usuario);
             saida.setMotivo(motivo);
+            saida.setQuantidade(BigDecimal.valueOf(5.0));
             saida.setDtSaida(data);
 
             Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(saida));
@@ -312,12 +319,15 @@ class SaidaEstoqueServiceTest {
             Motivo motivo = new Motivo();
             motivo.setId(1);
 
+            SaidaEstoque existente = new SaidaEstoque();
+            existente.setQuantidade(BigDecimal.valueOf(3.0));
+
             SaidaEstoque saida = new SaidaEstoque();
             saida.setInsumo(insumo);
             saida.setUsuario(usuario);
             saida.setMotivo(motivo);
 
-            Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(new SaidaEstoque()));
+            Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(existente));
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(RecursoNaoEncontradoException.class,
@@ -331,6 +341,7 @@ class SaidaEstoqueServiceTest {
 
             Insumo insumo = new Insumo();
             insumo.setId(1);
+            insumo.setQtdAtual(20.0);
 
             Usuario usuario = new Usuario();
             usuario.setId(1);
@@ -338,12 +349,15 @@ class SaidaEstoqueServiceTest {
             Motivo motivo = new Motivo();
             motivo.setId(1);
 
+            SaidaEstoque existente = new SaidaEstoque();
+            existente.setQuantidade(BigDecimal.valueOf(3.0));
+
             SaidaEstoque saida = new SaidaEstoque();
             saida.setInsumo(insumo);
             saida.setUsuario(usuario);
             saida.setMotivo(motivo);
 
-            Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(new SaidaEstoque()));
+            Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(existente));
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepo.findById(1)).thenReturn(Optional.empty());
 
@@ -358,6 +372,7 @@ class SaidaEstoqueServiceTest {
 
             Insumo insumo = new Insumo();
             insumo.setId(1);
+            insumo.setQtdAtual(20.0);
 
             Usuario usuario = new Usuario();
             usuario.setId(1);
@@ -365,12 +380,15 @@ class SaidaEstoqueServiceTest {
             Motivo motivo = new Motivo();
             motivo.setId(1);
 
+            SaidaEstoque existente = new SaidaEstoque();
+            existente.setQuantidade(BigDecimal.valueOf(3.0));
+
             SaidaEstoque saida = new SaidaEstoque();
             saida.setInsumo(insumo);
             saida.setUsuario(usuario);
             saida.setMotivo(motivo);
 
-            Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(new SaidaEstoque()));
+            Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(existente));
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepo.findById(1)).thenReturn(Optional.of(usuario));
             Mockito.when(motivoRepo.findById(1)).thenReturn(Optional.empty());
@@ -387,6 +405,7 @@ class SaidaEstoqueServiceTest {
 
             Insumo insumo = new Insumo();
             insumo.setId(1);
+            insumo.setQtdAtual(20.0);
 
             Usuario usuario = new Usuario();
             usuario.setId(1);
@@ -396,12 +415,14 @@ class SaidaEstoqueServiceTest {
 
             SaidaEstoque existente = new SaidaEstoque();
             existente.setId(id);
+            existente.setQuantidade(BigDecimal.valueOf(3.0));
             existente.setDtSaida(dataExistente);
 
             SaidaEstoque saidaAtualizada = new SaidaEstoque();
             saidaAtualizada.setInsumo(insumo);
             saidaAtualizada.setUsuario(usuario);
             saidaAtualizada.setMotivo(motivo);
+            saidaAtualizada.setQuantidade(BigDecimal.valueOf(5.0));
             saidaAtualizada.setDtSaida(null);
 
             Mockito.when(saidaRepo.findById(id)).thenReturn(Optional.of(existente));
@@ -414,7 +435,6 @@ class SaidaEstoqueServiceTest {
 
             Assertions.assertEquals(dataExistente, resultado.getDtSaida());
         }
-
     }
 
     @Nested
