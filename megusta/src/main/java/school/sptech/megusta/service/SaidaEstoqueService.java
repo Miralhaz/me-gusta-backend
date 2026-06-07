@@ -41,46 +41,57 @@ public class SaidaEstoqueService {
     }
 
     public SaidaEstoque cadastrar(SaidaEstoque novaSaida) {
-        Insumo insumo = insumoRepo.findById(novaSaida.getInsumo().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
-        Usuario usuario = usuarioRepo.findById(novaSaida.getUsuario().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
-        Motivo motivo = motivoRepo.findById(novaSaida.getMotivo().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Motivo não encontrado."));
+         Insumo insumo = insumoRepo.findById(novaSaida.getInsumo().getId())
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
+         Usuario usuario = usuarioRepo.findById(novaSaida.getUsuario().getId())
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+         Motivo motivo = motivoRepo.findById(novaSaida.getMotivo().getId())
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Motivo não encontrado."));
 
-        novaSaida.setInsumo(insumo);
-        novaSaida.setUsuario(usuario);
-        novaSaida.setMotivo(motivo);
+         novaSaida.setInsumo(insumo);
+         novaSaida.setUsuario(usuario);
+         novaSaida.setMotivo(motivo);
 
-        if (novaSaida.getDtSaida() == null) {
-            novaSaida.setDtSaida(LocalDateTime.now());
-        }
+         if (novaSaida.getDtSaida() == null) {
+             novaSaida.setDtSaida(LocalDateTime.now());
+         }
 
-        return saidaRepo.save(novaSaida);
-    }
+         Double quantidadeASubtrair = novaSaida.getQuantidade().doubleValue();
+         insumo.setQtdAtual(insumo.getQtdAtual() - quantidadeASubtrair);
+         insumoRepo.save(insumo);
+
+         return saidaRepo.save(novaSaida);
+     }
 
     public SaidaEstoque atualizar(SaidaEstoque saidaAtualizada, Integer id) {
-        SaidaEstoque existente = saidaRepo.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Saída de estoque não encontrada."));
+         SaidaEstoque existente = saidaRepo.findById(id)
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Saída de estoque não encontrada."));
 
-        Insumo insumo = insumoRepo.findById(saidaAtualizada.getInsumo().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
-        Usuario usuario = usuarioRepo.findById(saidaAtualizada.getUsuario().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
-        Motivo motivo = motivoRepo.findById(saidaAtualizada.getMotivo().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Motivo não encontrado."));
+         Insumo insumo = insumoRepo.findById(saidaAtualizada.getInsumo().getId())
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
+         Usuario usuario = usuarioRepo.findById(saidaAtualizada.getUsuario().getId())
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+         Motivo motivo = motivoRepo.findById(saidaAtualizada.getMotivo().getId())
+                 .orElseThrow(() -> new RecursoNaoEncontradoException("Motivo não encontrado."));
 
-        existente.setInsumo(insumo);
-        existente.setUsuario(usuario);
-        existente.setMotivo(motivo);
-        existente.setQuantidade(saidaAtualizada.getQuantidade());
+         Double quantidadeAnterior = existente.getQuantidade().doubleValue();
+         insumo.setQtdAtual(insumo.getQtdAtual() + quantidadeAnterior);
 
-        if (saidaAtualizada.getDtSaida() != null) {
-            existente.setDtSaida(saidaAtualizada.getDtSaida());
-        }
+         existente.setInsumo(insumo);
+         existente.setUsuario(usuario);
+         existente.setMotivo(motivo);
+         existente.setQuantidade(saidaAtualizada.getQuantidade());
 
-        return saidaRepo.save(existente);
-    }
+         Double novaQuantidade = saidaAtualizada.getQuantidade().doubleValue();
+         insumo.setQtdAtual(insumo.getQtdAtual() - novaQuantidade);
+         insumoRepo.save(insumo);
+
+         if (saidaAtualizada.getDtSaida() != null) {
+             existente.setDtSaida(saidaAtualizada.getDtSaida());
+         }
+
+         return saidaRepo.save(existente);
+     }
 
     public void deletar(Integer id) {
         SaidaEstoque existente = saidaRepo.findById(id)
