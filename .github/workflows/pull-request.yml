@@ -19,7 +19,7 @@ jobs:
           cache: maven
 
       - name: Build e testes
-        run: mvn -B clean verify
+        run: mvn -B -f megusta/pom.xml clean verify
 
       - name: Upload dos relatórios
         if: always()
@@ -27,5 +27,5 @@ jobs:
         with:
           name: reports
           path: |
-            target/surefire-reports
-            target/site
+            megusta/target/surefire-reports
+            megusta/target/site
