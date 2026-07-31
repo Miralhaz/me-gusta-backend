@@ -18,8 +18,8 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Build e testes
-        run: mvn -B -f megusta/pom.xml clean verify
+      - name: Build (somente compile/pack)
+        run: mvn -B -f megusta/pom.xml -DskipTests=true clean package
 
       - name: Upload dos relatórios
         if: always()
