@@ -22,6 +22,8 @@ import school.sptech.megusta.service.CategoriaFogazzaService;
 
 import java.util.List;
 
+/*Testando branch e PR do git*/
+
 @RestController
 @RequestMapping("/categoria-fogazza")
 @Tag(name = "06. Categorias de Fogazza", description = "Gerenciamento das categorias (ex: Salgadas, Doces, Especiais)")
