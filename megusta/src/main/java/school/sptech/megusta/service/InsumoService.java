@@ -74,10 +74,14 @@ public class InsumoService {
         TipoStatus tipoStatus = tipoStatusRepository.findById(insumo.getTipoStatus().getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrado."));
 
-        insumoExistente.setId(id);
+        insumoExistente.setNome(insumo.getNome());
+        insumoExistente.setCodigoInsumo(insumo.getCodigoInsumo());
+        insumoExistente.setEstoqueMinimo(insumo.getEstoqueMinimo());
+        insumoExistente.setQtdAtual(insumo.getQtdAtual());
+        insumoExistente.setAtivo(insumo.isAtivo());
         insumoExistente.setCategoriaInsumo(categoriaInsumo);
         insumoExistente.setUnidadeMedida(unidadeMedida);
         insumoExistente.setTipoStatus(tipoStatus);
-        return insumoRepository.save(insumo);
+        return insumoRepository.save(insumoExistente);
     }
 }
