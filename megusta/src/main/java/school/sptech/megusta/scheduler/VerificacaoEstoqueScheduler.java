@@ -5,6 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import school.sptech.megusta.model.Insumo;
+import school.sptech.megusta.notificacao.AlertaEstoque;
+import school.sptech.megusta.notificacao.NotificacaoEstoqueService;
+import school.sptech.megusta.notificacao.WhatsAppSenderPort;
 import school.sptech.megusta.repository.InsumoRepository;
 
 import java.time.LocalDateTime;
@@ -16,34 +19,29 @@ public class VerificacaoEstoqueScheduler {
     private static final Logger log = LoggerFactory.getLogger(VerificacaoEstoqueScheduler.class);
 
     private final InsumoRepository insumoRepository;
+    private final NotificacaoEstoqueService notificacaoEstoqueService;
 
-    public VerificacaoEstoqueScheduler(InsumoRepository insumoRepository) {
+    public VerificacaoEstoqueScheduler(InsumoRepository insumoRepository,
+                                       WhatsAppSenderPort whatsappSender) {
         this.insumoRepository = insumoRepository;
+        this.notificacaoEstoqueService = new NotificacaoEstoqueService(whatsappSender);
     }
 
     @Scheduled(cron = "0 0 7 * * *")
     public void verificarEstoqueMinimo() {
         log.info("[{}] Iniciando verificação de estoque mínimo...", LocalDateTime.now());
 
-        List<Insumo> todosInsumos = insumoRepository.findAll();
-
-        List<Insumo> insumosAbaixoMinimo = todosInsumos.stream()
+        List<AlertaEstoque> alertas = insumoRepository.findAll().stream()
                 .filter(Insumo::isAtivo)
-                .filter(i -> i.getQtdAtual() < i.getEstoqueMinimo())
+                .map(i -> new AlertaEstoque(i.getNome(), i.getCodigoInsumo(), i.getQtdAtual(), i.getEstoqueMinimo()))
                 .toList();
 
-        if (insumosAbaixoMinimo.isEmpty()) {
-            log.info("Todos os insumos estão com estoque adequado.");
+        int notificados = notificacaoEstoqueService.notificarAbaixoMinimo(alertas);
+
+        if (notificados > 0) {
+            log.warn("{} insumo(s) abaixo do estoque mínimo — notificação(ões) despachada(s).", notificados);
         } else {
-            log.warn("*** {} insumo(s) abaixo do estoque mínimo:", insumosAbaixoMinimo.size());
-            insumosAbaixoMinimo.forEach(i ->
-                    log.warn("  - {} (Código: {}) | Atual: {} | Mínimo: {}",
-                            i.getNome(),
-                            i.getCodigoInsumo(),
-                            i.getQtdAtual(),
-                            i.getEstoqueMinimo()
-                    )
-            );
+            log.info("Todos os insumos estão com estoque adequado.");
         }
 
         log.info("Verificação de estoque concluída.");
