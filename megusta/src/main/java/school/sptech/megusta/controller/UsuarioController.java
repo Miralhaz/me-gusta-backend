@@ -8,10 +8,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
+import school.sptech.megusta.dto.usuario.UsuarioUpdateDto;
 import school.sptech.megusta.mapper.UsuarioMapper;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.service.UsuarioService;
@@ -80,26 +82,34 @@ public class UsuarioController {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (Unauthorized)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> atualizar(
             @PathVariable Integer id,
-            @RequestBody UsuarioRequestDto dto
+            @RequestBody UsuarioUpdateDto dto,
+            Authentication authentication
     ){
-        return ResponseEntity.ok(service.atualizar(dto, id));
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        return ResponseEntity.ok(service.atualizar(dto, id, usuarioLogado.getId()));
     }
 
     @Operation(summary = "Excluir usuário")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (Unauthorized)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Integer id){
-        service.excluir(id);
+    public ResponseEntity<Void> deletar(
+            @PathVariable Integer id,
+            Authentication authentication
+    ){
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        service.excluir(id, usuarioLogado.getId());
         return ResponseEntity.noContent().build();
     }
 }
