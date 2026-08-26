@@ -40,11 +40,12 @@ public class UsuarioService {
         requestDto.setSenha(passwordEncoder.encode(requestDto.getSenha()));
         Usuario usuarioParaCadastrar = UsuarioMapper.toEntity(requestDto);
 
-        boolean existe = repository.existsByNomeAndEmail(usuarioParaCadastrar.getNome(),
-                usuarioParaCadastrar.getEmail());
-        if(existe){
+        boolean existe = repository.existsByEmail(usuarioParaCadastrar.getEmail());
+
+        if (existe){
            throw new RecursoConflitoException("Usuário já existe!");
         }
+
         Usuario usuarioCadastrado = repository.save(usuarioParaCadastrar);
         return UsuarioMapper.toResponseDto(usuarioCadastrado);
     }
@@ -60,10 +61,14 @@ public class UsuarioService {
         Usuario existente = repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
-        boolean existeEmDuplicidade = repository.existsByNomeAndEmailAndIdNot(
-                requestDto.getNome(), requestDto.getEmail(), id);
-        if (existeEmDuplicidade) {
-            throw new RecursoConflitoException("Usuário já existe!");
+        boolean emailDuplicado = repository.existsByEmailAndIdNot(
+                requestDto.getEmail(), id);
+
+        boolean nomeDuplicado = repository.existsByNomeAndIdNot(
+                requestDto.getNome(), id);
+
+        if (emailDuplicado || nomeDuplicado) {
+            throw new RecursoConflitoException("Email ou Nome já cadastrado!");
         }
 
         existente.setNome(requestDto.getNome());
