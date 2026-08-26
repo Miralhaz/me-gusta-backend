@@ -19,7 +19,7 @@ public class AutenticacaoRequestDto {
 
     @NotBlank
     @Size(max = 128)
-    @Schema(example = "senha123")
+    @Schema(example = "Senha@123")
     private String senha;
 
     public AutenticacaoRequestDto() {
