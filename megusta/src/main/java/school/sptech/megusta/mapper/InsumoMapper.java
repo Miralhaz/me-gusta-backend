@@ -34,6 +34,7 @@ public class InsumoMapper {
         response.setEstoqueMinimo(insumo.getEstoqueMinimo());
         response.setQuantidadeAtual(insumo.getQtdAtual());
         response.setAtivo(insumo.isAtivo());
+        response.setDtCadastro(insumo.getDtCadastro().toLocalDate());
         response.setInsumoCategoria(insumoCategoria);
         response.setUnidadeInsumo(unidadeInsumo);
         response.setTipoStatus(tipoStatusInsumo);
