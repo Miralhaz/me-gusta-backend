@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
+import school.sptech.megusta.dto.usuario.UsuarioUpdateDto;
+import school.sptech.megusta.exception.AcessoNegadoException;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.mapper.UsuarioMapper;
@@ -169,36 +171,58 @@ class UsuarioServiceTest {
     class atualizar {
 
         @Test
-        @DisplayName("Deve atualizar corretamente")
+        @DisplayName("Deve atualizar corretamente quando o id da URL pertence ao usuário autenticado")
         void deveAtualizarCorretamente() {
 
             Integer id = 1;
+            Integer idAutenticado = 1;
 
-            UsuarioRequestDto dto = new UsuarioRequestDto();
-            dto.setNome("Bianca");
-            dto.setEmail("bi@teste.com");
-            dto.setSenha("123");
+            Usuario existente = new Usuario(id, "Bianca", "bi@teste.com", "hashAntigo");
 
-            Usuario usuario = UsuarioMapper.toEntity(dto);
+            UsuarioUpdateDto dto = new UsuarioUpdateDto();
+            dto.setNome("Bianca Souza");
+            dto.setEmail("bi.nova@teste.com");
 
-            Mockito.when(passwordEncoder.encode("123"))
-                    .thenReturn("senhaCriptografada");
-
-            Mockito.when(repository.existsById(id))
-                    .thenReturn(true);
+            Mockito.when(repository.findById(id))
+                    .thenReturn(Optional.of(existente));
 
             Mockito.when(
                             repository.existsByNomeAndEmailAndIdNot(
-                                    "Bianca",
-                                    "bi@teste.com",
+                                    "Bianca Souza",
+                                    "bi.nova@teste.com",
                                     id))
                     .thenReturn(false);
 
             Mockito.when(repository.save(Mockito.any(Usuario.class)))
-                    .thenReturn(usuario);
+                    .thenAnswer(invocation -> invocation.getArgument(0));
 
-            Assertions.assertNotNull(
-                    usuarioService.atualizar(dto, id));
+            var resposta = usuarioService.atualizar(dto, id, idAutenticado);
+
+            Assertions.assertNotNull(resposta);
+            Assertions.assertEquals("Bianca Souza", resposta.getNome());
+            Assertions.assertEquals("bi.nova@teste.com", resposta.getEmail());
+            Assertions.assertEquals("hashAntigo", existente.getSenha());
+            Mockito.verify(passwordEncoder, Mockito.never()).encode(Mockito.anyString());
+        }
+
+        @Test
+        @DisplayName("Deve lançar AcessoNegadoException quando o id da URL for de outro usuário (IDOR)")
+        void deveLancarAcessoNegadoQuandoIdDiferenteDoAutenticado() {
+
+            Integer id = 1;
+            Integer idAutenticado = 2;
+
+            UsuarioUpdateDto dto = new UsuarioUpdateDto();
+            dto.setNome("Hacker");
+            dto.setEmail("hacker@gmail.com");
+
+            Assertions.assertThrows(
+                    AcessoNegadoException.class,
+                    () -> usuarioService.atualizar(dto, id, idAutenticado)
+            );
+
+            Mockito.verify(repository, Mockito.never()).findById(Mockito.any());
+            Mockito.verify(repository, Mockito.never()).save(Mockito.any(Usuario.class));
         }
 
         @Test
@@ -206,21 +230,18 @@ class UsuarioServiceTest {
         void deveLancarExceptionQuandoUsuarioNaoExistir() {
 
             Integer id = 1;
+            Integer idAutenticado = 1;
 
-            UsuarioRequestDto dto = new UsuarioRequestDto();
+            UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Bianca");
             dto.setEmail("bi@teste.com");
-            dto.setSenha("123");
 
-            Mockito.when(passwordEncoder.encode("123"))
-                    .thenReturn("senha");
-
-            Mockito.when(repository.existsById(id))
-                    .thenReturn(false);
+            Mockito.when(repository.findById(id))
+                    .thenReturn(Optional.empty());
 
             Assertions.assertThrows(
                     RecursoNaoEncontradoException.class,
-                    () -> usuarioService.atualizar(dto, id)
+                    () -> usuarioService.atualizar(dto, id, idAutenticado)
             );
         }
 
@@ -229,17 +250,16 @@ class UsuarioServiceTest {
         void deveLancarExceptionQuandoExistirDuplicidade() {
 
             Integer id = 1;
+            Integer idAutenticado = 1;
 
-            UsuarioRequestDto dto = new UsuarioRequestDto();
+            Usuario existente = new Usuario(id, "Bianca", "bi@teste.com", "hashAntigo");
+
+            UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Bianca");
             dto.setEmail("bi@teste.com");
-            dto.setSenha("123");
 
-            Mockito.when(passwordEncoder.encode("123"))
-                    .thenReturn("senha");
-
-            Mockito.when(repository.existsById(id))
-                    .thenReturn(true);
+            Mockito.when(repository.findById(id))
+                    .thenReturn(Optional.of(existente));
 
             Mockito.when(
                             repository.existsByNomeAndEmailAndIdNot(
@@ -250,7 +270,7 @@ class UsuarioServiceTest {
 
             Assertions.assertThrows(
                     RecursoConflitoException.class,
-                    () -> usuarioService.atualizar(dto, id)
+                    () -> usuarioService.atualizar(dto, id, idAutenticado)
             );
         }
     }
@@ -260,15 +280,16 @@ class UsuarioServiceTest {
     class excluir {
 
         @Test
-        @DisplayName("Deve excluir corretamente")
+        @DisplayName("Deve excluir corretamente quando o id da URL pertence ao usuário autenticado")
         void deveExcluirCorretamente() {
 
             Integer id = 1;
+            Integer idAutenticado = 1;
 
             Mockito.when(repository.existsById(id))
                     .thenReturn(true);
 
-            usuarioService.excluir(id);
+            usuarioService.excluir(id, idAutenticado);
 
             Mockito.verify(repository,
                             Mockito.times(1))
@@ -276,17 +297,33 @@ class UsuarioServiceTest {
         }
 
         @Test
+        @DisplayName("Deve lançar AcessoNegadoException quando o id da URL for de outro usuário (IDOR)")
+        void deveLancarAcessoNegadoQuandoIdDiferenteDoAutenticado() {
+
+            Integer id = 1;
+            Integer idAutenticado = 2;
+
+            Assertions.assertThrows(
+                    AcessoNegadoException.class,
+                    () -> usuarioService.excluir(id, idAutenticado)
+            );
+
+            Mockito.verify(repository, Mockito.never()).deleteById(Mockito.any());
+        }
+
+        @Test
         @DisplayName("Deve lançar exception quando usuário não existir")
         void deveLancarExceptionQuandoUsuarioNaoExistir() {
 
             Integer id = 1;
+            Integer idAutenticado = 1;
 
             Mockito.when(repository.existsById(id))
                     .thenReturn(false);
 
             Assertions.assertThrows(
                     RecursoNaoEncontradoException.class,
-                    () -> usuarioService.excluir(id)
+                    () -> usuarioService.excluir(id, idAutenticado)
             );
         }
     }

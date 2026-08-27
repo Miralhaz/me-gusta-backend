@@ -6,9 +6,13 @@ import school.sptech.megusta.model.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
-    boolean existsByNomeAndEmail(String nome, String email);
+    boolean existsByEmail(String email);
 
-    boolean existsByNomeAndEmailAndIdNot(String nome, String email, Integer id);
+    boolean existsByEmailAndIdNot(String email, Integer id);
+
+    boolean existsByNome(String nome);
+
+    boolean existsByNomeAndIdNot(String nome, Integer id);
 
     UserDetails findByEmail(String login);
 }
