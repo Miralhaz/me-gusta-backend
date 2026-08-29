@@ -7,11 +7,18 @@ import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.model.TipoStatus;
 import school.sptech.megusta.model.UnidadeMedida;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
 public class InsumoMapper {
 
     public static InsumoResponse toResponse(Insumo insumo){
+        return toResponse(insumo, null);
+    }
+
+    public static InsumoResponse toResponse(Insumo insumo, LocalDate proximaValidade){
 
         InsumoResponse.InsumoCategoria insumoCategoria = new InsumoResponse.InsumoCategoria();
         InsumoResponse.UnidadeInsumo unidadeInsumo = new InsumoResponse.UnidadeInsumo();
@@ -38,6 +45,11 @@ public class InsumoMapper {
         response.setInsumoCategoria(insumoCategoria);
         response.setUnidadeInsumo(unidadeInsumo);
         response.setTipoStatus(tipoStatusInsumo);
+
+        if (proximaValidade != null) {
+            response.setProximaValidade(proximaValidade);
+            response.setDiasParaVencer(ChronoUnit.DAYS.between(LocalDate.now(), proximaValidade));
+        }
 
         return response;
 
@@ -70,6 +82,12 @@ public class InsumoMapper {
     public static List<InsumoResponse> toResponse(List<Insumo> insumos){
         return insumos.stream()
                 .map(InsumoMapper::toResponse)
+                .toList();
+    }
+
+    public static List<InsumoResponse> toResponse(List<Insumo> insumos, Map<Integer, LocalDate> proximasValidades){
+        return insumos.stream()
+                .map(insumo -> toResponse(insumo, proximasValidades.get(insumo.getId())))
                 .toList();
     }
 
