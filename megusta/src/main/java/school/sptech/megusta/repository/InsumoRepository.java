@@ -13,5 +13,4 @@ public interface InsumoRepository extends JpaRepository<Insumo, Integer> {
     boolean existsByCategoriaInsumo(CategoriaInsumo categoria);
 
     List<Insumo> findByCategoriaInsumoId(Integer categoriaId);
-
 }
