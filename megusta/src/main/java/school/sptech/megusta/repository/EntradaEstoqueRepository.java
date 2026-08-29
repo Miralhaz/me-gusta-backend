@@ -19,4 +19,9 @@ public interface EntradaEstoqueRepository extends JpaRepository<EntradaEstoque, 
 
     List<EntradaEstoque> findByLote(String lote);
 
+    List<EntradaEstoque> findByDtValidadeGreaterThanEqualOrderByDtValidadeAsc(LocalDate data);
+
+    List<EntradaEstoque> findByInsumoIdAndDtValidadeGreaterThanEqualOrderByDtValidadeAsc(
+            Integer insumoId, LocalDate data);
+
 }

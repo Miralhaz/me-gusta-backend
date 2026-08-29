@@ -17,7 +17,9 @@ import school.sptech.megusta.mapper.InsumoMapper;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.service.InsumoService;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/insumos")
@@ -43,7 +45,8 @@ public class InsumoController {
         if (insumos.isEmpty()){
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(InsumoMapper.toResponse(insumos));
+        Map<Integer, LocalDate> proximasValidades = insumoService.buscarProximasValidades();
+        return ResponseEntity.ok(InsumoMapper.toResponse(insumos, proximasValidades));
     }
 
     @Operation(summary = "Buscar insumo por ID")
@@ -56,7 +59,8 @@ public class InsumoController {
     @GetMapping("/{id}")
     public ResponseEntity<InsumoResponse> buscarPorId(@PathVariable Integer id){
         Insumo insumo = insumoService.buscarPorId(id);
-        return ResponseEntity.ok(InsumoMapper.toResponse(insumo));
+        LocalDate proximaValidade = insumoService.buscarProximaValidade(id);
+        return ResponseEntity.ok(InsumoMapper.toResponse(insumo, proximaValidade));
     }
 
     @Operation(summary = "Cadastrar novo insumo")
