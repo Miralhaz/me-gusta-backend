@@ -8,6 +8,8 @@ import school.sptech.megusta.repository.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import static java.lang.Double.parseDouble;
+
 @Service
 public class EntradaEstoqueService {
 
@@ -63,6 +65,9 @@ public class EntradaEstoqueService {
         entradaEstoque.setFornecedor(fornecedor);
         entradaEstoque.setTipoStatus(tipoStatus);
         entradaEstoque.setUnidadeMedida(unidadeMedida);
+
+        insumo.setQtdAtual(insumo.getQtdAtual() + entradaEstoque.getQuantidadeAbsoluta().doubleValue());
+        insumoRepository.save(insumo);
 
         return entradaEstoqueRepository.save(entradaEstoque);
     }
