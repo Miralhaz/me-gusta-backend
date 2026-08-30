@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<String> handleNaoEncontrado(RecursoNaoEncontradoException e) {
@@ -24,6 +28,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<String> handleAcessoNegado(AcessoNegadoException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
     public ResponseEntity<String> handleConstraintViolation(jakarta.validation.ConstraintViolationException e) {
         String mensagem = e.getConstraintViolations()
@@ -31,6 +40,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
                 .collect(java.util.stream.Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensagem);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenerico(Exception e) {
+        logger.error("Erro não tratado na aplicação: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro interno do servidor");
     }
 
     @Override

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -27,6 +27,15 @@ public class InsumoResponse {
 
     @Schema(example = "true")
     private boolean ativo;
+
+    @Schema(example = "2026-08-26")
+    private LocalDate dtCadastro;
+
+    @Schema(example = "2026-09-02")
+    private LocalDate proximaValidade;
+
+    @Schema(example = "5")
+    private Long diasParaVencer;
 
     private InsumoCategoria insumoCategoria;
     private UnidadeInsumo unidadeInsumo;
