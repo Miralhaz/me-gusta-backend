@@ -42,9 +42,4 @@ public class InsumoRequest {
     @Schema(example = "1")
     private Integer fkUnidadeMedida;
 
-    @NotNull
-    @Positive
-    @Schema(example = "1")
-    private Integer fkStatus;
-
 }

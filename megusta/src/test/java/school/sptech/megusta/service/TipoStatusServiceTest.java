@@ -211,4 +211,60 @@ class TipoStatusServiceTest {
                     () -> tipoStatusService.excluir(tipoStatus.getId()));
         }
     }
+
+    @Nested
+    @DisplayName("Método calcularStatusEstoque")
+    class calcularStatusEstoque {
+
+        @Test
+        @DisplayName("Deve retornar OK quando quantidade está confortavelmente acima do mínimo")
+        void deveRetornarOkQuandoQuantidadeAcimaDoMinimo() {
+            TipoStatus ok = new TipoStatus(); ok.setId(1); ok.setNome("OK");
+
+            Mockito.when(tipoStatusRepository.findById(1)).thenReturn(Optional.of(ok));
+
+            Assertions.assertEquals(ok, tipoStatusService.calcularStatusEstoque(20.0, 5.0));
+        }
+
+        @Test
+        @DisplayName("Deve retornar ATENÇÃO quando quantidade está perto do mínimo")
+        void deveRetornarAtencaoQuandoQuantidadePertoDoMinimo() {
+            TipoStatus atencao = new TipoStatus(); atencao.setId(2); atencao.setNome("ATENÇÃO");
+
+            Mockito.when(tipoStatusRepository.findById(2)).thenReturn(Optional.of(atencao));
+
+            Assertions.assertEquals(atencao, tipoStatusService.calcularStatusEstoque(5.5, 5.0));
+        }
+
+        @Test
+        @DisplayName("Deve retornar CRÍTICO quando quantidade está no mínimo ou abaixo dele")
+        void deveRetornarCriticoQuandoQuantidadeNoMinimoOuAbaixo() {
+            TipoStatus critico = new TipoStatus(); critico.setId(3); critico.setNome("CRÍTICO");
+
+            Mockito.when(tipoStatusRepository.findById(3)).thenReturn(Optional.of(critico));
+
+            Assertions.assertEquals(critico, tipoStatusService.calcularStatusEstoque(5.0, 5.0));
+        }
+
+        @Test
+        @DisplayName("Deve retornar CRÍTICO quando quantidade é zero")
+        void deveRetornarCriticoQuandoQuantidadeZero() {
+            TipoStatus critico = new TipoStatus(); critico.setId(3); critico.setNome("CRÍTICO");
+
+            Mockito.when(tipoStatusRepository.findById(3)).thenReturn(Optional.of(critico));
+
+            Assertions.assertEquals(critico, tipoStatusService.calcularStatusEstoque(0.0, 5.0));
+        }
+
+        @Test
+        @DisplayName("Deve retornar OK quando estoqueMinimo é nulo ou zero")
+        void deveRetornarOkQuandoEstoqueMinimoNuloOuZero() {
+            TipoStatus ok = new TipoStatus(); ok.setId(1); ok.setNome("OK");
+
+            Mockito.when(tipoStatusRepository.findById(1)).thenReturn(Optional.of(ok));
+
+            Assertions.assertEquals(ok, tipoStatusService.calcularStatusEstoque(10.0, null));
+            Assertions.assertEquals(ok, tipoStatusService.calcularStatusEstoque(10.0, 0.0));
+        }
+    }
 }

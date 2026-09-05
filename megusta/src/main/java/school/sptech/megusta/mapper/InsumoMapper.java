@@ -4,7 +4,6 @@ import school.sptech.megusta.dto.insumo.InsumoRequest;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.Insumo;
-import school.sptech.megusta.model.TipoStatus;
 import school.sptech.megusta.model.UnidadeMedida;
 
 import java.time.LocalDate;
@@ -71,10 +70,6 @@ public class InsumoMapper {
         UnidadeMedida unidadeMedida = new UnidadeMedida();
         unidadeMedida.setId(request.getFkUnidadeMedida());
         insumo.setUnidadeMedida(unidadeMedida);
-
-        TipoStatus tipoStatus = new TipoStatus();
-        tipoStatus.setId(request.getFkStatus());
-        insumo.setTipoStatus(tipoStatus);
 
         return insumo;
     }

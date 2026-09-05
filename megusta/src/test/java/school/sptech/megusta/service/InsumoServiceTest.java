@@ -17,7 +17,6 @@ import school.sptech.megusta.model.TipoStatus;
 import school.sptech.megusta.model.UnidadeMedida;
 import school.sptech.megusta.repository.CategoriaInsumoRepository;
 import school.sptech.megusta.repository.InsumoRepository;
-import school.sptech.megusta.repository.TipoStatusRepository;
 import school.sptech.megusta.repository.UnidadeMedidaRepository;
 
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ class InsumoServiceTest {
     private UnidadeMedidaRepository unidadeMedidaRepository;
 
     @Mock
-    private TipoStatusRepository tipoStatusRepository;
+    private TipoStatusService tipoStatusService;
 
     @InjectMocks
     private InsumoService insumoService;
@@ -122,43 +121,16 @@ class InsumoServiceTest {
 
             insumo.setCategoriaInsumo(categoriaInsumo);
             insumo.setUnidadeMedida(unidadeMedida);
-            insumo.setTipoStatus(tipoStatus);
+            insumo.setEstoqueMinimo(5.0);
+            insumo.setQtdAtual(20.0);
 
             Mockito.when(insumoRepository.existsByNomeOrCodigoInsumo(insumo.getNome(), insumo.getCodigoInsumo())).thenReturn(false);
             Mockito.when(categoriaInsumoRepository.findById(categoriaInsumo.getId())).thenReturn(Optional.of(categoriaInsumo));
             Mockito.when(unidadeMedidaRepository.findById(unidadeMedida.getId())).thenReturn(Optional.of(unidadeMedida));
-            Mockito.when(tipoStatusRepository.findById(tipoStatus.getId())).thenReturn(Optional.of(tipoStatus));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo())).thenReturn(tipoStatus);
             Mockito.when(insumoRepository.save(insumo)).thenReturn(insumo);
 
             Assertions.assertEquals(insumo, insumoService.cadastrar(insumo));
-        }
-
-        @Test
-        @DisplayName("deve lançar exception caso tipoStatus não encontrado")
-        void deveLancarExceptionCasoTipoStatusNaoEncontrado(){
-            Insumo insumo = new Insumo();
-            insumo.setNome("queijo");
-            insumo.setCodigoInsumo("abc");
-
-            CategoriaInsumo categoriaInsumo = new CategoriaInsumo();
-            categoriaInsumo.setId(1);
-
-            UnidadeMedida unidadeMedida = new UnidadeMedida();
-            unidadeMedida.setId(1);
-
-            TipoStatus tipoStatus = new TipoStatus();
-            tipoStatus.setId(1);
-
-            insumo.setCategoriaInsumo(categoriaInsumo);
-            insumo.setUnidadeMedida(unidadeMedida);
-            insumo.setTipoStatus(tipoStatus);
-
-            Mockito.when(insumoRepository.existsByNomeOrCodigoInsumo(insumo.getNome(), insumo.getCodigoInsumo())).thenReturn(false);
-            Mockito.when(categoriaInsumoRepository.findById(categoriaInsumo.getId())).thenReturn(Optional.of(categoriaInsumo));
-            Mockito.when(unidadeMedidaRepository.findById(unidadeMedida.getId())).thenReturn(Optional.of(unidadeMedida));
-            Mockito.when(tipoStatusRepository.findById(tipoStatus.getId())).thenReturn(Optional.empty());
-
-            Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> insumoService.cadastrar(insumo));
         }
 
         @Test
@@ -174,12 +146,8 @@ class InsumoServiceTest {
             UnidadeMedida unidadeMedida = new UnidadeMedida();
             unidadeMedida.setId(1);
 
-            TipoStatus tipoStatus = new TipoStatus();
-            tipoStatus.setId(1);
-
             insumo.setCategoriaInsumo(categoriaInsumo);
             insumo.setUnidadeMedida(unidadeMedida);
-            insumo.setTipoStatus(tipoStatus);
 
             Mockito.when(insumoRepository.existsByNomeOrCodigoInsumo(insumo.getNome(), insumo.getCodigoInsumo())).thenReturn(false);
             Mockito.when(categoriaInsumoRepository.findById(categoriaInsumo.getId())).thenReturn(Optional.of(categoriaInsumo));
@@ -263,43 +231,16 @@ class InsumoServiceTest {
 
             insumo.setCategoriaInsumo(categoriaInsumo);
             insumo.setUnidadeMedida(unidadeMedida);
-            insumo.setTipoStatus(tipoStatus);
+            insumo.setEstoqueMinimo(5.0);
+            insumo.setQtdAtual(20.0);
 
             Mockito.when(insumoRepository.findById(insumo.getId())).thenReturn(Optional.of(insumo));
             Mockito.when(categoriaInsumoRepository.findById(categoriaInsumo.getId())).thenReturn(Optional.of(categoriaInsumo));
             Mockito.when(unidadeMedidaRepository.findById(unidadeMedida.getId())).thenReturn(Optional.of(unidadeMedida));
-            Mockito.when(tipoStatusRepository.findById(tipoStatus.getId())).thenReturn(Optional.of(tipoStatus));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo())).thenReturn(tipoStatus);
             Mockito.when(insumoRepository.save(insumo)).thenReturn(insumo);
 
             Assertions.assertEquals(insumo, insumoService.atualizar(insumo, insumo.getId()));
-        }
-
-        @Test
-        @DisplayName("deve lançar exception caso tipoStatus não encontrado")
-        void deveLancarExceptionCasoTipoStatusNaoEncontrado(){
-            Insumo insumo = new Insumo();
-            insumo.setNome("queijo");
-            insumo.setCodigoInsumo("abc");
-
-            CategoriaInsumo categoriaInsumo = new CategoriaInsumo();
-            categoriaInsumo.setId(1);
-
-            UnidadeMedida unidadeMedida = new UnidadeMedida();
-            unidadeMedida.setId(1);
-
-            TipoStatus tipoStatus = new TipoStatus();
-            tipoStatus.setId(1);
-
-            insumo.setCategoriaInsumo(categoriaInsumo);
-            insumo.setUnidadeMedida(unidadeMedida);
-            insumo.setTipoStatus(tipoStatus);
-
-            Mockito.when(insumoRepository.findById(insumo.getId())).thenReturn(Optional.of(insumo));
-            Mockito.when(categoriaInsumoRepository.findById(categoriaInsumo.getId())).thenReturn(Optional.of(categoriaInsumo));
-            Mockito.when(unidadeMedidaRepository.findById(unidadeMedida.getId())).thenReturn(Optional.of(unidadeMedida));
-            Mockito.when(tipoStatusRepository.findById(tipoStatus.getId())).thenReturn(Optional.empty());
-
-            Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> insumoService.atualizar(insumo, insumo.getId()));
         }
 
         @Test
