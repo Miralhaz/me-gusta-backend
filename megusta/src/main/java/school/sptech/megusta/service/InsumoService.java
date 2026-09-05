@@ -6,12 +6,10 @@ import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.EntradaEstoque;
 import school.sptech.megusta.model.Insumo;
-import school.sptech.megusta.model.TipoStatus;
 import school.sptech.megusta.model.UnidadeMedida;
 import school.sptech.megusta.repository.CategoriaInsumoRepository;
 import school.sptech.megusta.repository.EntradaEstoqueRepository;
 import school.sptech.megusta.repository.InsumoRepository;
-import school.sptech.megusta.repository.TipoStatusRepository;
 import school.sptech.megusta.repository.UnidadeMedidaRepository;
 
 import java.time.LocalDate;
@@ -25,14 +23,14 @@ public class InsumoService {
     private final InsumoRepository insumoRepository;
     private final CategoriaInsumoRepository categoriaInsumoRepository;
     private final UnidadeMedidaRepository unidadeMedidaRepository;
-    private final TipoStatusRepository tipoStatusRepository;
+    private final TipoStatusService tipoStatusService;
     private final EntradaEstoqueRepository entradaEstoqueRepository;
 
-    public InsumoService(InsumoRepository insumoRepository, CategoriaInsumoRepository categoriaInsumoRepository, UnidadeMedidaRepository unidadeMedidaRepository, TipoStatusRepository tipoStatusRepository, EntradaEstoqueRepository entradaEstoqueRepository) {
+    public InsumoService(InsumoRepository insumoRepository, CategoriaInsumoRepository categoriaInsumoRepository, UnidadeMedidaRepository unidadeMedidaRepository, TipoStatusService tipoStatusService, EntradaEstoqueRepository entradaEstoqueRepository) {
         this.insumoRepository = insumoRepository;
         this.categoriaInsumoRepository = categoriaInsumoRepository;
         this.unidadeMedidaRepository = unidadeMedidaRepository;
-        this.tipoStatusRepository = tipoStatusRepository;
+        this.tipoStatusService = tipoStatusService;
         this.entradaEstoqueRepository = entradaEstoqueRepository;
     }
 
@@ -76,12 +74,9 @@ public class InsumoService {
         UnidadeMedida unidadeMedida = unidadeMedidaRepository.findById(insumo.getUnidadeMedida().getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Unidade de medida não encontrada."));
 
-        TipoStatus tipoStatus = tipoStatusRepository.findById(insumo.getTipoStatus().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrada."));
-
         insumo.setCategoriaInsumo(categoriaInsumo);
         insumo.setUnidadeMedida(unidadeMedida);
-        insumo.setTipoStatus(tipoStatus);
+        insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
         return insumoRepository.save(insumo);
     }
 
@@ -96,9 +91,6 @@ public class InsumoService {
         UnidadeMedida unidadeMedida = unidadeMedidaRepository.findById(insumo.getUnidadeMedida().getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Unidade de medida não encontrada."));
 
-        TipoStatus tipoStatus = tipoStatusRepository.findById(insumo.getTipoStatus().getId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrado."));
-
         insumoExistente.setNome(insumo.getNome());
         insumoExistente.setCodigoInsumo(insumo.getCodigoInsumo());
         insumoExistente.setEstoqueMinimo(insumo.getEstoqueMinimo());
@@ -106,7 +98,7 @@ public class InsumoService {
         insumoExistente.setAtivo(insumo.isAtivo());
         insumoExistente.setCategoriaInsumo(categoriaInsumo);
         insumoExistente.setUnidadeMedida(unidadeMedida);
-        insumoExistente.setTipoStatus(tipoStatus);
+        insumoExistente.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumoExistente.getQtdAtual(), insumoExistente.getEstoqueMinimo()));
         return insumoRepository.save(insumoExistente);
     }
 }
