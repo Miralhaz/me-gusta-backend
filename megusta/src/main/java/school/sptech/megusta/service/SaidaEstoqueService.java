@@ -21,14 +21,17 @@ public class SaidaEstoqueService {
     private final InsumoRepository insumoRepo;
     private final UsuarioRepository usuarioRepo;
     private final MotivoRepository motivoRepo;
+    private final TipoStatusService tipoStatusService;
 
     public SaidaEstoqueService(SaidaEstoqueRepository saidaRepo,
                                InsumoRepository insumoRepo,
-                               UsuarioRepository usuarioRepo, MotivoRepository motivoRepo) {
+                               UsuarioRepository usuarioRepo, MotivoRepository motivoRepo,
+                               TipoStatusService tipoStatusService) {
         this.saidaRepo = saidaRepo;
         this.insumoRepo = insumoRepo;
         this.usuarioRepo = usuarioRepo;
         this.motivoRepo = motivoRepo;
+        this.tipoStatusService = tipoStatusService;
     }
 
     public List<SaidaEstoque> listar() {
@@ -58,6 +61,7 @@ public class SaidaEstoqueService {
 
          Double quantidadeASubtrair = novaSaida.getQuantidade().doubleValue();
          insumo.setQtdAtual(insumo.getQtdAtual() - quantidadeASubtrair);
+         insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
          insumoRepo.save(insumo);
 
          return saidaRepo.save(novaSaida);
@@ -84,6 +88,7 @@ public class SaidaEstoqueService {
 
          Double novaQuantidade = saidaAtualizada.getQuantidade().doubleValue();
          insumo.setQtdAtual(insumo.getQtdAtual() - novaQuantidade);
+         insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
          insumoRepo.save(insumo);
 
          if (saidaAtualizada.getDtSaida() != null) {

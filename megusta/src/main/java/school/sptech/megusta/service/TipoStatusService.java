@@ -11,11 +11,35 @@ import java.util.List;
 @Service
 public class TipoStatusService {
 
+    private static final int ID_STATUS_OK = 1;
+    private static final int ID_STATUS_ATENCAO = 2;
+    private static final int ID_STATUS_CRITICO = 3;
+    private static final double FATOR_ATENCAO = 1.2;
+
     private final TipoStatusRepository tipoStatusRepository;
 
 
     public TipoStatusService(TipoStatusRepository tipoStatusRepository) {
         this.tipoStatusRepository = tipoStatusRepository;
+    }
+
+    /**
+     * Lógica centralizada para o status de estoque de um insumo.
+     * CRÍTICO: quantidade atual já está no mínimo ou abaixo dele.
+     * ATENÇÃO: quantidade atual está perto do mínimo (até 20% acima).
+     * OK: quantidade confortavelmente acima do mínimo.
+     */
+    public TipoStatus calcularStatusEstoque(Double quantidadeAtual, Double estoqueMinimo) {
+        if (quantidadeAtual == null || estoqueMinimo == null || estoqueMinimo <= 0) {
+            return buscarPorId(ID_STATUS_OK);
+        }
+        if (quantidadeAtual <= estoqueMinimo) {
+            return buscarPorId(ID_STATUS_CRITICO);
+        }
+        if (quantidadeAtual <= estoqueMinimo * FATOR_ATENCAO) {
+            return buscarPorId(ID_STATUS_ATENCAO);
+        }
+        return buscarPorId(ID_STATUS_OK);
     }
 
     public List<TipoStatus> listar(){

@@ -43,6 +43,9 @@ class EntradaEstoqueServiceTest {
     @Mock
     private UnidadeMedidaRepository unidadeMedidaRepository;
 
+    @Mock
+    private TipoStatusService tipoStatusService;
+
     @InjectMocks
     private EntradaEstoqueService entradaEstoqueService;
 
@@ -107,6 +110,8 @@ class EntradaEstoqueServiceTest {
             EntradaEstoque entrada = new EntradaEstoque();
 
             Insumo insumo = new Insumo(); insumo.setId(1);
+            insumo.setQtdAtual(10.0);
+            insumo.setEstoqueMinimo(5.0);
             Usuario usuario = new Usuario(); usuario.setId(1);
             Fornecedor fornecedor = new Fornecedor(); fornecedor.setId(1);
             TipoStatus tipoStatus = new TipoStatus(); tipoStatus.setId(1);
@@ -117,12 +122,14 @@ class EntradaEstoqueServiceTest {
             entrada.setFornecedor(fornecedor);
             entrada.setTipoStatus(tipoStatus);
             entrada.setUnidadeMedida(unidadeMedida);
+            entrada.setQuantidadeAbsoluta(BigDecimal.valueOf(5.0));
 
             Mockito.when(insumoRepository.findById(insumo.getId())).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
             Mockito.when(fornecedorRepository.findById(fornecedor.getId())).thenReturn(Optional.of(fornecedor));
             Mockito.when(tipoStatusRepository.findById(tipoStatus.getId())).thenReturn(Optional.of(tipoStatus));
             Mockito.when(unidadeMedidaRepository.findById(unidadeMedida.getId())).thenReturn(Optional.of(unidadeMedida));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(Mockito.anyDouble(), Mockito.anyDouble())).thenReturn(tipoStatus);
             Mockito.when(entradaEstoqueRepository.save(entrada)).thenReturn(entrada);
 
             Assertions.assertEquals(entrada, entradaEstoqueService.cadastrar(entrada));

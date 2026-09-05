@@ -19,6 +19,7 @@ public class EntradaEstoqueService {
     private final FornecedorRepository fornecedorRepository;
     private final TipoStatusRepository tipoStatusRepository;
     private final UnidadeMedidaRepository unidadeMedidaRepository;
+    private final TipoStatusService tipoStatusService;
 
     public EntradaEstoqueService(
             EntradaEstoqueRepository entradaEstoqueRepository,
@@ -26,13 +27,15 @@ public class EntradaEstoqueService {
             UsuarioRepository usuarioRepository,
             FornecedorRepository fornecedorRepository,
             TipoStatusRepository tipoStatusRepository,
-            UnidadeMedidaRepository unidadeMedidaRepository) {
+            UnidadeMedidaRepository unidadeMedidaRepository,
+            TipoStatusService tipoStatusService) {
         this.entradaEstoqueRepository = entradaEstoqueRepository;
         this.insumoRepository = insumoRepository;
         this.usuarioRepository = usuarioRepository;
         this.fornecedorRepository = fornecedorRepository;
         this.tipoStatusRepository = tipoStatusRepository;
         this.unidadeMedidaRepository = unidadeMedidaRepository;
+        this.tipoStatusService = tipoStatusService;
     }
 
     public List<EntradaEstoque> listar() {
@@ -67,6 +70,7 @@ public class EntradaEstoqueService {
         entradaEstoque.setUnidadeMedida(unidadeMedida);
 
         insumo.setQtdAtual(insumo.getQtdAtual() + entradaEstoque.getQuantidadeAbsoluta().doubleValue());
+        insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
         insumoRepository.save(insumo);
 
         return entradaEstoqueRepository.save(entradaEstoque);

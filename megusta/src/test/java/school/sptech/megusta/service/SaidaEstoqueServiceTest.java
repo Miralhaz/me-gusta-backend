@@ -13,6 +13,7 @@ import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.model.Motivo;
 import school.sptech.megusta.model.SaidaEstoque;
+import school.sptech.megusta.model.TipoStatus;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.repository.InsumoRepository;
 import school.sptech.megusta.repository.MotivoRepository;
@@ -42,6 +43,9 @@ class SaidaEstoqueServiceTest {
 
     @Mock
     private MotivoRepository motivoRepo;
+
+    @Mock
+    private TipoStatusService tipoStatusService;
 
     @InjectMocks
     private SaidaEstoqueService saidaEstoqueService;
@@ -130,6 +134,7 @@ class SaidaEstoqueServiceTest {
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepo.findById(1)).thenReturn(Optional.of(usuario));
             Mockito.when(motivoRepo.findById(1)).thenReturn(Optional.of(motivo));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(Mockito.any(), Mockito.any())).thenReturn(new TipoStatus());
             Mockito.when(saidaRepo.save(Mockito.any(SaidaEstoque.class))).thenReturn(saida);
 
             SaidaEstoque resultado = saidaEstoqueService.cadastrar(saida);
@@ -235,6 +240,7 @@ class SaidaEstoqueServiceTest {
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepo.findById(1)).thenReturn(Optional.of(usuario));
             Mockito.when(motivoRepo.findById(1)).thenReturn(Optional.of(motivo));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(Mockito.any(), Mockito.any())).thenReturn(new TipoStatus());
             Mockito.when(saidaRepo.save(Mockito.any(SaidaEstoque.class))).thenReturn(saida);
 
             saidaEstoqueService.cadastrar(saida);
@@ -275,6 +281,7 @@ class SaidaEstoqueServiceTest {
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepo.findById(1)).thenReturn(Optional.of(usuario));
             Mockito.when(motivoRepo.findById(1)).thenReturn(Optional.of(motivo));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(Mockito.any(), Mockito.any())).thenReturn(new TipoStatus());
             Mockito.when(saidaRepo.save(Mockito.any(SaidaEstoque.class))).thenReturn(saida);
 
             Assertions.assertEquals(saida, saidaEstoqueService.atualizar(saida, id));
@@ -429,6 +436,7 @@ class SaidaEstoqueServiceTest {
             Mockito.when(insumoRepo.findById(1)).thenReturn(Optional.of(insumo));
             Mockito.when(usuarioRepo.findById(1)).thenReturn(Optional.of(usuario));
             Mockito.when(motivoRepo.findById(1)).thenReturn(Optional.of(motivo));
+            Mockito.when(tipoStatusService.calcularStatusEstoque(Mockito.any(), Mockito.any())).thenReturn(new TipoStatus());
             Mockito.when(saidaRepo.save(Mockito.any(SaidaEstoque.class))).thenReturn(existente);
 
             SaidaEstoque resultado = saidaEstoqueService.atualizar(saidaAtualizada, id);
