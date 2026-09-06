@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.insumo.InsumoRequest;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
+import school.sptech.megusta.dto.insumo.InsumoResponseTelaInsumos;
 import school.sptech.megusta.mapper.InsumoMapper;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.service.InsumoService;
@@ -33,6 +34,22 @@ public class InsumoController {
     }
 
     @Operation(summary = "Listar todos os insumos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
+            @ApiResponse(responseCode = "204", description = "Nenhum insumo cadastrado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    @GetMapping("/geral")
+    public ResponseEntity<List<InsumoResponseTelaInsumos>> listarInsumos(){
+        List<Insumo> insumos = insumoService.listar();
+        if (insumos.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(InsumoMapper.toResponseTelaInsumos(insumos));
+    }
+
+    @Operation(summary = "Listar todos os insumos com datas de validade")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
