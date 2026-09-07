@@ -32,6 +32,9 @@ public class InsumoResponseTelaInsumos {
     @Schema(example = "2026-08-26")
     private LocalDate dtCadastro;
 
+    @Schema(example = "1.7")
+    private Double giroMensal;
+
     private InsumoResponseTelaInsumos.InsumoCategoria insumoCategoria;
     private InsumoResponseTelaInsumos.UnidadeInsumo unidadeInsumo;
 

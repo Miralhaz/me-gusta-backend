@@ -36,17 +36,17 @@ public class InsumoController {
     @Operation(summary = "Listar todos os insumos")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponseTelaInsumos.class))),
             @ApiResponse(responseCode = "204", description = "Nenhum insumo cadastrado", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
     @GetMapping("/geral")
     public ResponseEntity<List<InsumoResponseTelaInsumos>> listarInsumos(){
-        List<Insumo> insumos = insumoService.listar();
+        List<InsumoResponseTelaInsumos> insumos = insumoService.listarParaTelaEstoqueComGiro();
         if (insumos.isEmpty()){
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(InsumoMapper.toResponseTelaInsumos(insumos));
+        return ResponseEntity.ok(insumos);
     }
 
     @Operation(summary = "Listar todos os insumos com datas de validade")
