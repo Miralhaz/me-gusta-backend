@@ -2,6 +2,7 @@ package school.sptech.megusta.mapper;
 
 import school.sptech.megusta.dto.insumo.InsumoRequest;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
+import school.sptech.megusta.dto.insumo.InsumoResponseTelaInsumos;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.model.UnidadeMedida;
@@ -54,6 +55,31 @@ public class InsumoMapper {
 
     }
 
+    public static InsumoResponseTelaInsumos toResponseTelaInsumos (Insumo insumo){
+        InsumoResponseTelaInsumos.InsumoCategoria insumoCategoria = new InsumoResponseTelaInsumos.InsumoCategoria();
+        InsumoResponseTelaInsumos.UnidadeInsumo unidadeInsumo = new InsumoResponseTelaInsumos.UnidadeInsumo();
+
+        insumoCategoria.setId(insumo.getCategoriaInsumo().getId());
+        insumoCategoria.setNome(insumo.getCategoriaInsumo().getNome());
+
+        unidadeInsumo.setId(insumo.getUnidadeMedida().getId());
+        unidadeInsumo.setUnidade(insumo.getUnidadeMedida().getUnidade());
+
+        InsumoResponseTelaInsumos response = new InsumoResponseTelaInsumos();
+
+        response.setId(insumo.getId());
+        response.setNome(insumo.getNome());
+        response.setCodigoInsumo(insumo.getCodigoInsumo());
+        response.setEstoqueMinimo(insumo.getEstoqueMinimo());
+        response.setQuantidadeAtual(insumo.getQtdAtual());
+        response.setAtivo(insumo.isAtivo());
+        response.setDtCadastro(insumo.getDtCadastro().toLocalDate());
+        response.setInsumoCategoria(insumoCategoria);
+        response.setUnidadeInsumo(unidadeInsumo);
+
+        return response;
+    }
+
     public static Insumo toEntity(InsumoRequest request){
         Insumo insumo = new Insumo();
 
@@ -83,6 +109,12 @@ public class InsumoMapper {
     public static List<InsumoResponse> toResponse(List<Insumo> insumos, Map<Integer, LocalDate> proximasValidades){
         return insumos.stream()
                 .map(insumo -> toResponse(insumo, proximasValidades.get(insumo.getId())))
+                .toList();
+    }
+
+    public static List<InsumoResponseTelaInsumos> toResponseTelaInsumos(List<Insumo> insumos){
+        return insumos.stream()
+                .map(insumo -> toResponseTelaInsumos(insumo))
                 .toList();
     }
 
