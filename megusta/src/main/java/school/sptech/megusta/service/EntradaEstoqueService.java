@@ -6,6 +6,7 @@ import school.sptech.megusta.model.*;
 import school.sptech.megusta.repository.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.lang.Double.parseDouble;
@@ -129,7 +130,9 @@ public class EntradaEstoqueService {
     }
 
     public List<EntradaEstoque> buscarPorDataPedido(LocalDate dataInicio, LocalDate dataFim) {
-        return entradaEstoqueRepository.findByDtEntradaBetween(dataInicio, dataFim);
+        LocalDateTime inicio = dataInicio.atStartOfDay();
+        LocalDateTime fim = dataFim.atTime(23, 59, 59);
+        return entradaEstoqueRepository.findByDtEntradaBetween(inicio, fim);
     }
 
 }

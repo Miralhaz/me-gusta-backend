@@ -20,7 +20,7 @@ public interface EntradaEstoqueRepository extends JpaRepository<EntradaEstoque, 
 
     List<EntradaEstoque> findByUsuarioId(Integer usuarioId);
 
-    List<EntradaEstoque> findByDtEntradaBetween(LocalDate dataInicio, LocalDate dataFim);
+    List<EntradaEstoque> findByDtEntradaBetween(LocalDateTime dataInicio, LocalDateTime dataFim);
 
     List<EntradaEstoque> findByLote(String lote);
 
