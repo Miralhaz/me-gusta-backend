@@ -97,7 +97,7 @@ public class RelatorioService {
         stream.append("ET");
 
         String streamText = stream.toString();
-        byte[] streamBytes = streamText.getBytes(StandardCharsets.UTF_8);
+        byte[] streamBytes = streamText.getBytes(StandardCharsets.ISO_8859_1);
 
         List<String> objects = new ArrayList<>();
         objects.add("<< /Type /Catalog /Pages 2 0 R >>");
@@ -110,9 +110,10 @@ public class RelatorioService {
         pdf.append("%PDF-1.4\n");
         List<Integer> offsets = new ArrayList<>();
 
+        // Correção: Indexação dos objetos de 1 a 5 (compatível com as referências acima)
         for (int i = 0; i < objects.size(); i++) {
             offsets.add(pdf.length());
-            pdf.append(i).append(" 0 obj\n");
+            pdf.append(i + 1).append(" 0 obj\n");
             pdf.append(objects.get(i)).append("\nendobj\n");
         }
 
