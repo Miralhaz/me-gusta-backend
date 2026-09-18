@@ -3,6 +3,7 @@ package school.sptech.megusta.exception;
 import org.junit.jupiter.api.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @DisplayName("Testes de GlobalExceptionHandler (A05 - Security Misconfiguration)")
 class GlobalExceptionHandlerTest {
@@ -41,6 +42,17 @@ class GlobalExceptionHandlerTest {
         }
 
         @Test
+        @DisplayName("Deve retornar 409 para EstoqueInsuficienteException")
+        void deveRetornar409ParaEstoqueInsuficiente() {
+            ResponseEntity<String> resposta = handler.handleEstoqueInsuficiente(
+                    new EstoqueInsuficienteException("Estoque insuficiente do insumo 'Farinha de Trigo' (FT-001).")
+            );
+
+            Assertions.assertEquals(HttpStatus.CONFLICT, resposta.getStatusCode());
+            Assertions.assertEquals("Estoque insuficiente do insumo 'Farinha de Trigo' (FT-001).", resposta.getBody());
+        }
+
+        @Test
         @DisplayName("Deve retornar 403 para AcessoNegadoException")
         void deveRetornar403ParaAcessoNegado() {
             ResponseEntity<String> resposta = handler.handleAcessoNegado(
@@ -49,6 +61,17 @@ class GlobalExceptionHandlerTest {
 
             Assertions.assertEquals(HttpStatus.FORBIDDEN, resposta.getStatusCode());
             Assertions.assertEquals("Sem permissão para alterar este usuário", resposta.getBody());
+        }
+
+        @Test
+        @DisplayName("Deve retornar 401 para BadCredentialsException (credenciais inválidas)")
+        void deveRetornar401ParaBadCredentials() {
+            ResponseEntity<String> resposta = handler.handleBadCredentials(
+                    new BadCredentialsException("Bad credentials")
+            );
+
+            Assertions.assertEquals(HttpStatus.UNAUTHORIZED, resposta.getStatusCode());
+            Assertions.assertEquals("Credenciais inválidas", resposta.getBody());
         }
     }
 

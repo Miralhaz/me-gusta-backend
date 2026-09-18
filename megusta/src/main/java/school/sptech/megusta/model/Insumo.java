@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -33,7 +34,7 @@ public class Insumo {
     @Column(nullable = false)
     private Double estoqueMinimo;
 
-    @Positive
+    @PositiveOrZero
     @Column(nullable = false)
     private Double qtdAtual;
 
