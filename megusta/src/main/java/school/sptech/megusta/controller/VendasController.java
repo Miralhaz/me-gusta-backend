@@ -25,9 +25,12 @@ public class VendasController {
 
     private final VendasService vendasService;
 
-    @Operation(summary = "Importar planilha de vendas: extrai os itens em JSON e aplica a baixa de estoque")
+    @Operation(summary = "Importar planilha de vendas (qualquer layout): extrai os itens em JSON e aplica a baixa de estoque",
+            description = "Aceita qualquer planilha .xlsx que contenha colunas de nome de item e de quantidade "
+                    + "vendida: abas/dashboards sem essas colunas são ignoradas e células com itens separados por ';' "
+                    + "contam 1 unidade por ocorrência. O sistema aplica a baixa de estoque de forma transacional.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Planilha processada com sucesso; baixa de estoque aplicada",
+            @ApiResponse(responseCode = "200", description = "Planilha processada com sucesso; baixa de estoque aplicada (lista vazia quando nenhuma aba possui colunas de item/quantidade)",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ItemVendido.class))),
             @ApiResponse(responseCode = "400", description = "Arquivo vazio ou formato de arquivo inválido (deve ser .xlsx); nenhuma alteração é persistida", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content),

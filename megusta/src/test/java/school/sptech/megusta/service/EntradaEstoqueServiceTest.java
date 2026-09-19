@@ -15,6 +15,7 @@ import school.sptech.megusta.repository.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -494,7 +495,9 @@ class EntradaEstoqueServiceTest {
             LocalDate fim = LocalDate.now();
             List<EntradaEstoque> entradas = new ArrayList<>(); entradas.add(new EntradaEstoque());
 
-            Mockito.when(entradaEstoqueRepository.findByDtEntradaBetween(inicio, fim)).thenReturn(entradas);
+            LocalDateTime inicioBD = inicio.atStartOfDay();
+            LocalDateTime fimBD = fim.atTime(23, 59, 59);
+            Mockito.when(entradaEstoqueRepository.findByDtEntradaBetween(inicioBD, fimBD)).thenReturn(entradas);
 
             Assertions.assertEquals(entradas, entradaEstoqueService.buscarPorDataPedido(inicio, fim));
         }
@@ -506,7 +509,9 @@ class EntradaEstoqueServiceTest {
             LocalDate fim = LocalDate.now();
             List<EntradaEstoque> entradas = new ArrayList<>();
 
-            Mockito.when(entradaEstoqueRepository.findByDtEntradaBetween(inicio, fim)).thenReturn(entradas);
+            LocalDateTime inicioBD = inicio.atStartOfDay();
+            LocalDateTime fimBD = fim.atTime(23, 59, 59);
+            Mockito.when(entradaEstoqueRepository.findByDtEntradaBetween(inicioBD, fimBD)).thenReturn(entradas);
 
             Assertions.assertEquals(entradas, entradaEstoqueService.buscarPorDataPedido(inicio, fim));
         }
@@ -521,7 +526,9 @@ class EntradaEstoqueServiceTest {
             entradas.add(new EntradaEstoque());
             entradas.add(new EntradaEstoque());
 
-            Mockito.when(entradaEstoqueRepository.findByDtEntradaBetween(inicio, fim)).thenReturn(entradas);
+            LocalDateTime inicioBD = inicio.atStartOfDay();
+            LocalDateTime fimBD = fim.atTime(23, 59, 59);
+            Mockito.when(entradaEstoqueRepository.findByDtEntradaBetween(inicioBD, fimBD)).thenReturn(entradas);
 
             List<EntradaEstoque> resultado = entradaEstoqueService.buscarPorDataPedido(inicio, fim);
 

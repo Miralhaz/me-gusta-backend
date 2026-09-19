@@ -2,8 +2,6 @@ package school.sptech.megusta.service;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -14,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -70,6 +69,9 @@ class VendasServiceTest {
     @Mock
     private TipoStatusService tipoStatusService;
 
+    @Spy
+    private PlanilhaVendasExtractor planilhaVendasExtractor = new PlanilhaVendasExtractor();
+
     @InjectMocks
     private VendasService vendasService;
 
@@ -79,44 +81,8 @@ class VendasServiceTest {
     }
 
     // ---------------------------------------------------------------
-    // 3.2 - Reconhecimento do formato da planilha
+    // 3.1 - Extração genérica da planilha (delega ao PlanilhaVendasExtractor)
     // ---------------------------------------------------------------
-
-    @Test
-    @DisplayName("Deve reconhecer o formato de histórico de itens vendidos")
-    void deveReconhecerFormatoHistoricoItensVendidos() throws IOException {
-        try (InputStream in = getResource("/historico_itens_vendidos.xlsx");
-             Workbook workbook = WorkbookFactory.create(in)) {
-
-            Assertions.assertEquals(
-                    VendasService.FormatoPlanilha.HISTORICO_ITENS_VENDIDOS,
-                    vendasService.detectarFormato(workbook));
-        }
-    }
-
-    @Test
-    @DisplayName("Deve reconhecer o formato de pedidos recentes")
-    void deveReconhecerFormatoPedidosRecentes() throws IOException {
-        try (InputStream in = getResource("/pedidos_recentes.xlsx");
-             Workbook workbook = WorkbookFactory.create(in)) {
-
-            Assertions.assertEquals(
-                    VendasService.FormatoPlanilha.PEDIDOS_RECENTES,
-                    vendasService.detectarFormato(workbook));
-        }
-    }
-
-    @Test
-    @DisplayName("Deve reconhecer o formato de relatório de cardápio")
-    void deveReconhecerFormatoRelatorioCardapio() throws IOException {
-        try (InputStream in = getResource("/relatorio_cardapio.xlsx");
-             Workbook workbook = WorkbookFactory.create(in)) {
-
-            Assertions.assertEquals(
-                    VendasService.FormatoPlanilha.RELATORIO_CARDAPIO,
-                    vendasService.detectarFormato(workbook));
-        }
-    }
 
     // ---------------------------------------------------------------
     // 3.3 - Leitor do formato histórico de itens vendidos
