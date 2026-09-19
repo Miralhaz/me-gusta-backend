@@ -130,9 +130,7 @@ class UsuarioServiceTest {
             Mockito.when(passwordEncoder.encode("123"))
                     .thenReturn("senhaCriptografada");
 
-            Mockito.when(repository.existsByNomeAndEmail(
-                            "Bianca",
-                            "bi@teste.com"))
+            Mockito.when(repository.existsByEmail("bi@teste.com"))
                     .thenReturn(false);
 
             Mockito.when(repository.save(Mockito.any(Usuario.class)))
@@ -154,9 +152,7 @@ class UsuarioServiceTest {
             Mockito.when(passwordEncoder.encode("123"))
                     .thenReturn("senhaCriptografada");
 
-            Mockito.when(repository.existsByNomeAndEmail(
-                            "Bianca",
-                            "bi@teste.com"))
+            Mockito.when(repository.existsByEmail("bi@teste.com"))
                     .thenReturn(true);
 
             Assertions.assertThrows(
@@ -186,10 +182,13 @@ class UsuarioServiceTest {
             Mockito.when(repository.findById(id))
                     .thenReturn(Optional.of(existente));
 
-            Mockito.when(
-                            repository.existsByNomeAndEmailAndIdNot(
-                                    "Bianca Souza",
+            Mockito.when(repository.existsByEmailAndIdNot(
                                     "bi.nova@teste.com",
+                                    id))
+                    .thenReturn(false);
+
+            Mockito.when(repository.existsByNomeAndIdNot(
+                                    "Bianca Souza",
                                     id))
                     .thenReturn(false);
 
@@ -261,9 +260,7 @@ class UsuarioServiceTest {
             Mockito.when(repository.findById(id))
                     .thenReturn(Optional.of(existente));
 
-            Mockito.when(
-                            repository.existsByNomeAndEmailAndIdNot(
-                                    "Bianca",
+            Mockito.when(repository.existsByEmailAndIdNot(
                                     "bi@teste.com",
                                     id))
                     .thenReturn(true);
