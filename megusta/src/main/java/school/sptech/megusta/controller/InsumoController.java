@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +68,26 @@ public class InsumoController {
         }
         Map<Integer, LocalDate> proximasValidades = insumoService.buscarProximasValidades();
         return ResponseEntity.ok(InsumoMapper.toResponse(insumos, proximasValidades));
+    }
+
+    @Operation(summary = "Listar insumos da tela de Estoque com paginação",
+            description = "Parâmetros opcionais: page (começa em 0), size (padrão 10), busca (nome do insumo) e categoria (nome da categoria)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página retornada com sucesso",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    @GetMapping("/estoque")
+    public ResponseEntity<PagedModel<InsumoResponse>> listarEstoquePaginado(
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String categoria,
+            @PageableDefault(size = 10, sort = "id") Pageable pageable
+    ){
+        Page<Insumo> pagina = insumoService.listarPaginado(busca, categoria, pageable);
+        Map<Integer, LocalDate> proximasValidades = insumoService.buscarProximasValidades();
+        Page<InsumoResponse> resposta = pagina.map(insumo ->
+                InsumoMapper.toResponse(insumo, proximasValidades.get(insumo.getId())));
+        return ResponseEntity.ok(new PagedModel<>(resposta));
     }
 
     @Operation(summary = "Buscar insumo por ID")
