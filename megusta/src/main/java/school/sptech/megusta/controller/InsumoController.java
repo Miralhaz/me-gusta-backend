@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.insumo.InsumoRequest;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.dto.insumo.InsumoResponseTelaInsumos;
+import school.sptech.megusta.dto.ruptura_insumo.RupturaInsumoResponseDto;
 import school.sptech.megusta.mapper.InsumoMapper;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.service.InsumoService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -110,5 +112,23 @@ public class InsumoController {
         Insumo insumo = InsumoMapper.toEntity(request);
         Insumo insumoAtt = insumoService.atualizar(insumo, id);
         return ResponseEntity.ok(InsumoMapper.toResponse(insumoAtt));
+    }
+
+    @Operation(summary = "Prever ruptura de estoque (dias de cobertura) por insumo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Previsão calculada com sucesso"),
+            @ApiResponse(responseCode = "204", description = "Nenhum insumo cadastrado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    @GetMapping("/previsao-ruptura")
+    public ResponseEntity<List<RupturaInsumoResponseDto>> preverRuptura(
+            @RequestParam LocalDateTime dataInicio,
+            @RequestParam LocalDateTime dataFim
+    ) {
+        List<RupturaInsumoResponseDto> previsoes = insumoService.calcularPrevisaoRuptura(dataInicio, dataFim);
+        if (previsoes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(previsoes);
     }
 }
