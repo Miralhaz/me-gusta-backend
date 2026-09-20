@@ -11,8 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import school.sptech.megusta.dto.insumo.InsumoResponse;
-import school.sptech.megusta.dto.planilha_vendas.Vendas;
+import school.sptech.megusta.dto.planilha_vendas.ItemVendido;
 import school.sptech.megusta.service.VendasService;
 
 import java.io.IOException;
@@ -26,18 +25,22 @@ public class VendasController {
 
     private final VendasService vendasService;
 
-    @Operation(summary = "Exibir a planilha de vendas em formato JSON")
+    @Operation(summary = "Importar planilha de vendas (qualquer layout): extrai os itens em JSON e aplica a baixa de estoque",
+            description = "Aceita qualquer planilha .xlsx que contenha colunas de nome de item e de quantidade "
+                    + "vendida: abas/dashboards sem essas colunas são ignoradas e células com itens separados por ';' "
+                    + "contam 1 unidade por ocorrência. O sistema aplica a baixa de estoque de forma transacional.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Planilha exibida com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Vendas.class))),
-            @ApiResponse(responseCode = "400", description = "Formato de arquivo inválido (deve ser xlsx)", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+            @ApiResponse(responseCode = "200", description = "Planilha processada com sucesso; baixa de estoque aplicada (lista vazia quando nenhuma aba possui colunas de item/quantidade)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ItemVendido.class))),
+            @ApiResponse(responseCode = "400", description = "Arquivo vazio ou formato de arquivo inválido (deve ser .xlsx); nenhuma alteração é persistida", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Estoque insuficiente para baixar os itens importados; nenhuma alteração é persistida", content = @Content)
     })
     @PostMapping(
             value = "/importar",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ResponseEntity<List<Vendas>> exibir(
+    public ResponseEntity<List<ItemVendido>> importar(
             @RequestPart("planilha") MultipartFile planilha
             ) throws IOException {
 
@@ -52,8 +55,8 @@ public class VendasController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<Vendas> vendas = vendasService.lerPlanilha(planilha);
+        List<ItemVendido> itens = vendasService.importarPlanilha(planilha);
 
-        return ResponseEntity.ok(vendas);
+        return ResponseEntity.ok(itens);
     }
 }

@@ -1,5 +1,7 @@
 package school.sptech.megusta.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.dto.insumo.InsumoResponseTelaInsumos;
 import school.sptech.megusta.dto.ruptura_insumo.RupturaInsumoResponseDto;
@@ -42,6 +44,15 @@ public class InsumoService {
 
     public List<Insumo> listar(){
         return insumoRepository.findAll();
+    }
+
+    public Page<Insumo> listarPaginado(String busca, String categoria, Pageable pageable){
+        String termo = (busca == null) ? "" : busca.trim();
+
+        if (categoria == null || categoria.isBlank()) {
+            return insumoRepository.findByNomeContainingIgnoreCase(termo, pageable);
+        }
+        return insumoRepository.findByNomeContainingIgnoreCaseAndCategoriaInsumoNome(termo, categoria, pageable);
     }
 
     public List<InsumoResponseTelaInsumos> listarParaTelaEstoqueComGiro() {

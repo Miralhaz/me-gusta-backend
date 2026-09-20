@@ -1,13 +1,11 @@
 package school.sptech.megusta.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import school.sptech.megusta.model.CategoriaInsumo;
 import school.sptech.megusta.model.Insumo;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface InsumoRepository extends JpaRepository<Insumo, Integer> {
@@ -18,16 +16,7 @@ public interface InsumoRepository extends JpaRepository<Insumo, Integer> {
 
     List<Insumo> findByCategoriaInsumoId(Integer categoriaId);
 
-    @Query("""
-    SELECT AVG(dailyTotal)
-    FROM (
-      SELECT SUM(se.quantidade) as dailyTotal
-      FROM SaidaEstoque se
-      WHERE se.insumo.id = :insumoId
-        AND se.dtSaida >= :dataInicio
-        AND se.dtSaida <= :dataFim
-      GROUP BY CAST(se.dtSaida AS localdate)
-    ) as dailyTotals
-    """)
-    BigDecimal mediaConsumoDiarioPorInsumo(@Param("insumoId") Integer insumoId, @Param("dataInicio") LocalDateTime dataInicio, @Param("dataFim") LocalDateTime dataFim);
+    Page<Insumo> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+
+    Page<Insumo> findByNomeContainingIgnoreCaseAndCategoriaInsumoNome(String nome, String categoria, Pageable pageable);
 }
