@@ -20,5 +20,7 @@ public class UsuarioResponseDto {
     @Schema(example = "breno@megusta.com")
     private String email;
 
+    @Schema(example = "11999999999")
+    private String telefone;
 
 }

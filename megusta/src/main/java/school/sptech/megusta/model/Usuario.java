@@ -3,6 +3,10 @@ package school.sptech.megusta.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +16,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "usuario")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Usuario implements UserDetails {
 
     @Id
@@ -31,47 +39,11 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    public Usuario() {
-    }
-
-    public Usuario(Integer id, String nome, String email, String senha) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
+    // Coluna já existente em megustaV06.sql e mantida anulável: registros
+    // anteriores a esta mudança têm telefone nulo. A obrigatoriedade é
+    // garantida na camada de API pelos DTOs de entrada.
+    @Column(length = 70)
+    private String telefone;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

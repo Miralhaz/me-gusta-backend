@@ -71,9 +71,7 @@ public class UsuarioService {
             throw new RecursoConflitoException("Email ou Nome já cadastrado!");
         }
 
-        existente.setNome(requestDto.getNome());
-        existente.setEmail(requestDto.getEmail());
-        Usuario usuarioAtualizado = repository.save(existente);
+        Usuario usuarioAtualizado = repository.save(UsuarioMapper.toEntity(requestDto, existente));
         return UsuarioMapper.toResponseDto(usuarioAtualizado);
     }
 

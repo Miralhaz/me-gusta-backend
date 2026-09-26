@@ -28,7 +28,7 @@ class AutenticacaoServiceTest {
         @Test
         @DisplayName("Deve retornar o usuário quando o e-mail existe")
         void deveRetornarUsuarioQuandoEmailExiste() {
-            Usuario usuario = new Usuario(1, "Enrico", "enrico@email.com", "123456");
+            Usuario usuario = new Usuario(1, "Enrico", "enrico@email.com", "123456", "11999999999");
 
             Mockito.when(repository.findByEmail("enrico@email.com"))
                     .thenReturn(usuario);

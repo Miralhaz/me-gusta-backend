@@ -43,4 +43,11 @@ public class UsuarioRequestDto {
     @Schema(example = "breno@megusta.com")
     private String email;
 
+    // Telefone aceito apenas como dígitos, com 10 ou 11 caracteres.
+    // A formatação visual é responsabilidade do frontend.
+    @NotBlank
+    @Pattern(regexp = "^[0-9]{10,11}$", message = "O telefone deve conter apenas dígitos, com 10 ou 11 caracteres")
+    @Schema(example = "11999999999")
+    private String telefone;
+
 }
