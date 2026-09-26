@@ -1,10 +1,7 @@
 package school.sptech.megusta.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.dto.insumo.InsumoResponseTelaInsumos;
-import school.sptech.megusta.dto.ruptura_insumo.RupturaInsumoResponseDto;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.mapper.InsumoMapper;
@@ -18,7 +15,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,15 +40,6 @@ public class InsumoService {
 
     public List<Insumo> listar(){
         return insumoRepository.findAll();
-    }
-
-    public Page<Insumo> listarPaginado(String busca, String categoria, Pageable pageable){
-        String termo = (busca == null) ? "" : busca.trim();
-
-        if (categoria == null || categoria.isBlank()) {
-            return insumoRepository.findByNomeContainingIgnoreCase(termo, pageable);
-        }
-        return insumoRepository.findByNomeContainingIgnoreCaseAndCategoriaInsumoNome(termo, categoria, pageable);
     }
 
     public List<InsumoResponseTelaInsumos> listarParaTelaEstoqueComGiro() {
@@ -151,74 +138,5 @@ public class InsumoService {
         Double estoqueMedio = (estoqueInicial + qtdAtual) / 2.0;
 
         return (estoqueMedio > 0) ? saidas / estoqueMedio : 0.0;
-    }
-
-    public List<RupturaInsumoResponseDto> calcularPrevisaoRuptura(LocalDateTime dataInicio, LocalDateTime dataFim) {
-        List<Insumo> insumos = insumoRepository.findAll();
-
-        List<RupturaInsumoResponseDto> resultado = new ArrayList<>();
-
-        for (Insumo insumo : insumos) {
-            BigDecimal quantidadeAtual = BigDecimal.valueOf(insumo.getQtdAtual());
-            BigDecimal estoqueMinimo = BigDecimal.valueOf(insumo.getEstoqueMinimo());
-
-            if (quantidadeAtual.compareTo(BigDecimal.ZERO) <= 0) {
-                resultado.add(new RupturaInsumoResponseDto(
-                        insumo.getId(),
-                        insumo.getNome(),
-                        insumo.getUnidadeMedida().getUnidade(),
-                        quantidadeAtual,
-                        estoqueMinimo,
-                        BigDecimal.ZERO,
-                        0,
-                        "CRÍTICO"
-                ));
-                continue;
-            }
-
-            BigDecimal consumoMedioDiario = insumoRepository.mediaConsumoDiarioPorInsumo(insumo.getId(), dataInicio, dataFim);
-
-            if (consumoMedioDiario == null || consumoMedioDiario.compareTo(BigDecimal.ZERO) <= 0) {
-                resultado.add(new RupturaInsumoResponseDto(
-                        insumo.getId(),
-                        insumo.getNome(),
-                        insumo.getUnidadeMedida().getUnidade(),
-                        quantidadeAtual,
-                        estoqueMinimo,
-                        BigDecimal.ZERO,
-                        999,
-                        "SEM CONSUMO"
-                ));
-                continue;
-            }
-
-            int diasDeCobertura = quantidadeAtual.divide(consumoMedioDiario, 0, BigDecimal.ROUND_HALF_UP).intValue();
-
-            String nivelRisco;
-            if (diasDeCobertura <= 2) {
-                nivelRisco = "CRÍTICO";
-            } else if (diasDeCobertura <= 5) {
-                nivelRisco = "ATENÇÃO";
-            } else if (diasDeCobertura <= 10) {
-                nivelRisco = "ALERTA";
-            } else {
-                nivelRisco = "OK";
-            }
-
-            resultado.add(new RupturaInsumoResponseDto(
-                    insumo.getId(),
-                    insumo.getNome(),
-                    insumo.getUnidadeMedida().getUnidade(),
-                    quantidadeAtual,
-                    estoqueMinimo,
-                    consumoMedioDiario,
-                    diasDeCobertura,
-                    nivelRisco
-            ));
-        }
-
-        resultado.sort((a, b) -> a.getDiasDeCobertura().compareTo(b.getDiasDeCobertura()));
-
-        return resultado;
     }
 }

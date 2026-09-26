@@ -482,7 +482,7 @@ class VendasServiceTest {
     private Usuario usuarioAtivo;
 
     private void autenticar() {
-        usuarioAtivo = new Usuario(1, "João", "joao@email.com", "senha");
+        usuarioAtivo = new Usuario(1, "João", "joao@email.com", "senha", "11999999999");
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(usuarioAtivo, null, usuarioAtivo.getAuthorities()));
     }

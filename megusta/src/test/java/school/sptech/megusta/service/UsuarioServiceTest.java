@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
+import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
 import school.sptech.megusta.dto.usuario.UsuarioUpdateDto;
 import school.sptech.megusta.exception.AcessoNegadoException;
 import school.sptech.megusta.exception.RecursoConflitoException;
@@ -124,6 +125,7 @@ class UsuarioServiceTest {
             dto.setNome("Bianca");
             dto.setEmail("bi@teste.com");
             dto.setSenha("123");
+            dto.setTelefone("11999999999");
 
             Usuario usuario = UsuarioMapper.toEntity(dto);
 
@@ -136,8 +138,10 @@ class UsuarioServiceTest {
             Mockito.when(repository.save(Mockito.any(Usuario.class)))
                     .thenReturn(usuario);
 
-            Assertions.assertNotNull(
-                    usuarioService.cadastrar(dto));
+            UsuarioResponseDto resposta = usuarioService.cadastrar(dto);
+
+            Assertions.assertNotNull(resposta);
+            Assertions.assertEquals("11999999999", resposta.getTelefone());
         }
 
         @Test
@@ -173,11 +177,12 @@ class UsuarioServiceTest {
             Integer id = 1;
             Integer idAutenticado = 1;
 
-            Usuario existente = new Usuario(id, "Bianca", "bi@teste.com", "hashAntigo");
+            Usuario existente = new Usuario(id, "Bianca", "bi@teste.com", "hashAntigo", "11988888888");
 
             UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Bianca Souza");
             dto.setEmail("bi.nova@teste.com");
+            dto.setTelefone("11977777777");
 
             Mockito.when(repository.findById(id))
                     .thenReturn(Optional.of(existente));
@@ -200,7 +205,10 @@ class UsuarioServiceTest {
             Assertions.assertNotNull(resposta);
             Assertions.assertEquals("Bianca Souza", resposta.getNome());
             Assertions.assertEquals("bi.nova@teste.com", resposta.getEmail());
+            Assertions.assertEquals("11977777777", resposta.getTelefone());
+            Assertions.assertEquals("11977777777", existente.getTelefone());
             Assertions.assertEquals("hashAntigo", existente.getSenha());
+            Assertions.assertEquals(id, existente.getId());
             Mockito.verify(passwordEncoder, Mockito.never()).encode(Mockito.anyString());
         }
 
@@ -214,6 +222,7 @@ class UsuarioServiceTest {
             UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Hacker");
             dto.setEmail("hacker@gmail.com");
+            dto.setTelefone("11955555555");
 
             Assertions.assertThrows(
                     AcessoNegadoException.class,
@@ -234,6 +243,7 @@ class UsuarioServiceTest {
             UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Bianca");
             dto.setEmail("bi@teste.com");
+            dto.setTelefone("11977777777");
 
             Mockito.when(repository.findById(id))
                     .thenReturn(Optional.empty());
@@ -251,11 +261,12 @@ class UsuarioServiceTest {
             Integer id = 1;
             Integer idAutenticado = 1;
 
-            Usuario existente = new Usuario(id, "Bianca", "bi@teste.com", "hashAntigo");
+            Usuario existente = new Usuario(id, "Bianca", "bi@teste.com", "hashAntigo", "11988888888");
 
             UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Bianca");
             dto.setEmail("bi@teste.com");
+            dto.setTelefone("11977777777");
 
             Mockito.when(repository.findById(id))
                     .thenReturn(Optional.of(existente));

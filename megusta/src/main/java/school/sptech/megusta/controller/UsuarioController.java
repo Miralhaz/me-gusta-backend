@@ -91,7 +91,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> atualizar(
             @PathVariable Integer id,
-            @RequestBody UsuarioUpdateDto dto,
+            @Valid @RequestBody UsuarioUpdateDto dto,
             Authentication authentication
     ){
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
