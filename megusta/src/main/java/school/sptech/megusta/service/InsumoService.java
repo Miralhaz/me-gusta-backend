@@ -55,19 +55,21 @@ public class InsumoService {
         return insumoRepository.findByNomeContainingIgnoreCaseAndCategoriaInsumoNome(termo, categoria, pageable);
     }
 
-    public List<InsumoResponseTelaInsumos> listarParaTelaEstoqueComGiro() {
-        List<Insumo> insumos = insumoRepository.findAll();
-        List<InsumoResponseTelaInsumos> dtos = InsumoMapper.toResponseTelaInsumos(insumos);
+    public Page<InsumoResponseTelaInsumos> listarParaTelaEstoqueComGiro(String busca, String categoria, Pageable pageable) {
+        String termo = (busca == null) ? "" : busca.trim();
+        Page<Insumo> insumos;
 
-        for (int i = 0; i < insumos.size(); i++) {
-            Insumo entidade = insumos.get(i);
-            InsumoResponseTelaInsumos dto = dtos.get(i);
-
-            Double giro = this.calcularGiroMensal(entidade);
-            dto.setGiroMensal(giro);
+        if (categoria == null || categoria.isBlank()) {
+            insumos = insumoRepository.findByNomeContainingIgnoreCase(termo, pageable);
+        } else {
+            insumos = insumoRepository.findByNomeContainingIgnoreCaseAndCategoriaInsumoNome(termo, categoria, pageable);
         }
 
-        return dtos;
+        return insumos.map(insumo -> {
+            InsumoResponseTelaInsumos dto =  InsumoMapper.toResponseTelaInsumos(insumo);
+            dto.setGiroMensal(this.calcularGiroMensal(insumo));
+            return dto;
+        });
     }
 
     public Insumo buscarPorId(Integer id){

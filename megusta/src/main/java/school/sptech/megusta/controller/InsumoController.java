@@ -47,12 +47,16 @@ public class InsumoController {
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
     @GetMapping("/geral")
-    public ResponseEntity<List<InsumoResponseTelaInsumos>> listarInsumos(){
-        List<InsumoResponseTelaInsumos> insumos = insumoService.listarParaTelaEstoqueComGiro();
+    public ResponseEntity<PagedModel<InsumoResponseTelaInsumos>> listarInsumosPaginado(
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String categoria,
+            @PageableDefault(size = 10, sort = "id") Pageable pageable
+    ){
+        Page<InsumoResponseTelaInsumos> insumos = insumoService.listarParaTelaEstoqueComGiro(busca, categoria, pageable);
         if (insumos.isEmpty()){
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(insumos);
+        return ResponseEntity.ok(new PagedModel<>(insumos));
     }
 
     @Operation(summary = "Listar todos os insumos com datas de validade")
