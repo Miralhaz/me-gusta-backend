@@ -65,7 +65,10 @@ public class UsuarioController {
         return ResponseEntity.ok(UsuarioMapper.toResponseDto(user));
     }
 
-    @Operation(summary = "Cadastrar novo usuário")
+    @Operation(summary = "Cadastrar novo usuário",
+            description = "Cadastra um novo perfil. Exige `nome`, `email`, `senha` forte e `telefone` "
+                    + "(obrigatório, até 70 caracteres). A resposta devolve `id`, `nome`, `email` e `telefone`; "
+                    + "a senha nunca é retornada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
@@ -79,7 +82,10 @@ public class UsuarioController {
         return ResponseEntity.status(201).body(service.cadastrar(dto));
     }
 
-    @Operation(summary = "Atualizar dados do usuário")
+    @Operation(summary = "Atualizar dados do usuário",
+            description = "Atualiza `nome`, `email` e `telefone` do próprio perfil. Todos os campos são "
+                    + "obrigatórios e validados; `telefone` aceita até 70 caracteres. A senha não faz parte "
+                    + "do payload e permanece inalterada. A resposta devolve `id`, `nome`, `email` e `telefone`.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
@@ -91,7 +97,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> atualizar(
             @PathVariable Integer id,
-            @RequestBody UsuarioUpdateDto dto,
+            @Valid @RequestBody UsuarioUpdateDto dto,
             Authentication authentication
     ){
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
