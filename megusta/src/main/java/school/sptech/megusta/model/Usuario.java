@@ -31,14 +31,23 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
+    @NotBlank
+    @Column(nullable = false)
+    private String telefone;
+
     public Usuario() {
     }
 
     public Usuario(Integer id, String nome, String email, String senha) {
+        this(id, nome, email, senha, null);
+    }
+
+    public Usuario(Integer id, String nome, String email, String senha, String telefone) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.senha = senha;
+        this.telefone = telefone;
     }
 
     public Integer getId() {
@@ -71,6 +80,14 @@ public class Usuario implements UserDetails {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
     }
 
     @Override
