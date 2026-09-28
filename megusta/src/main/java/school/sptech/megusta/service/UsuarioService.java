@@ -73,6 +73,7 @@ public class UsuarioService {
 
         existente.setNome(requestDto.getNome());
         existente.setEmail(requestDto.getEmail());
+        existente.setTelefone(requestDto.getTelefone());
         Usuario usuarioAtualizado = repository.save(existente);
         return UsuarioMapper.toResponseDto(usuarioAtualizado);
     }

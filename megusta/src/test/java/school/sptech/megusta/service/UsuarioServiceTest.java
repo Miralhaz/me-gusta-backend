@@ -124,6 +124,7 @@ class UsuarioServiceTest {
             dto.setNome("Bianca");
             dto.setEmail("bi@teste.com");
             dto.setSenha("123");
+            dto.setTelefone("(11) 91234-5678");
 
             Usuario usuario = UsuarioMapper.toEntity(dto);
 
@@ -136,8 +137,11 @@ class UsuarioServiceTest {
             Mockito.when(repository.save(Mockito.any(Usuario.class)))
                     .thenReturn(usuario);
 
-            Assertions.assertNotNull(
-                    usuarioService.cadastrar(dto));
+            var resposta = usuarioService.cadastrar(dto);
+
+            Assertions.assertNotNull(resposta);
+            Assertions.assertEquals("(11) 91234-5678", resposta.getTelefone());
+            Assertions.assertEquals("(11) 91234-5678", usuario.getTelefone());
         }
 
         @Test
@@ -178,6 +182,7 @@ class UsuarioServiceTest {
             UsuarioUpdateDto dto = new UsuarioUpdateDto();
             dto.setNome("Bianca Souza");
             dto.setEmail("bi.nova@teste.com");
+            dto.setTelefone("(11) 91234-5678");
 
             Mockito.when(repository.findById(id))
                     .thenReturn(Optional.of(existente));
@@ -200,6 +205,8 @@ class UsuarioServiceTest {
             Assertions.assertNotNull(resposta);
             Assertions.assertEquals("Bianca Souza", resposta.getNome());
             Assertions.assertEquals("bi.nova@teste.com", resposta.getEmail());
+            Assertions.assertEquals("(11) 91234-5678", resposta.getTelefone());
+            Assertions.assertEquals("(11) 91234-5678", existente.getTelefone());
             Assertions.assertEquals("hashAntigo", existente.getSenha());
             Mockito.verify(passwordEncoder, Mockito.never()).encode(Mockito.anyString());
         }
