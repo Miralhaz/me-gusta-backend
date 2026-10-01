@@ -1,5 +1,7 @@
 package school.sptech.megusta.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.*;
@@ -41,6 +43,43 @@ public class EntradaEstoqueService {
 
     public List<EntradaEstoque> listar() {
         return entradaEstoqueRepository.findAll();
+    }
+
+    public Page<EntradaEstoque> listarPaginado(String busca, String status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
+        String termo = (busca == null) ? "" : busca.trim();
+        boolean temBusca = !termo.isEmpty();
+        boolean temStatus = status != null && !status.isBlank();
+        boolean temData = dataInicio != null && dataFim != null;
+
+        LocalDateTime inicio = null;
+        LocalDateTime fim = null;
+        if (temData) {
+            inicio = dataInicio.atStartOfDay();
+            fim = dataFim.atTime(23, 59, 59);
+        }
+
+        if (temBusca && temStatus && temData) {
+            return entradaEstoqueRepository.findByBuscaAndDataPedidoBetween(termo, inicio, fim, pageable);
+        }
+        if (temBusca && temStatus) {
+            return entradaEstoqueRepository.findByBusca(termo, pageable);
+        }
+        if (temBusca && temData) {
+            return entradaEstoqueRepository.findByBuscaAndDataPedidoBetween(termo, inicio, fim, pageable);
+        }
+        if (temStatus && temData) {
+            return entradaEstoqueRepository.findByTipoStatusNomeAndDtPedidoBetween(status, inicio, fim, pageable);
+        }
+        if (temBusca) {
+            return entradaEstoqueRepository.findByBusca(termo, pageable);
+        }
+        if (temStatus) {
+            return entradaEstoqueRepository.findByTipoStatusNome(status, pageable);
+        }
+        if (temData) {
+            return entradaEstoqueRepository.findByDtPedidoBetween(inicio, fim, pageable);
+        }
+        return entradaEstoqueRepository.findAll(pageable);
     }
 
     public EntradaEstoque buscarPorId(Integer id) {
