@@ -8,6 +8,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.Fogazzas.FogazzasRequestDto;
@@ -28,20 +32,20 @@ public class FogazzasController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todas as fogazzas")
+    @Operation(summary = "Listar fogazzas com paginação",
+            description = "Parâmetros opcionais: page (começa em 0), size (padrão 10), sort (campo,direção)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = FogazzasResponseDto.class))),
-            @ApiResponse(responseCode = "204", description = "Nenhuma fogazza cadastrada", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Página retornada com sucesso",
+                    content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
-    @GetMapping
-    public ResponseEntity<List<FogazzasResponseDto>> listar() {
-        List<Fogazzas> fogazzaList = service.listar();
-        if (fogazzaList.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(FogazzasMapper.toResponseDtoList(fogazzaList));
+    @GetMapping("/paginado")
+    public ResponseEntity<PagedModel<FogazzasResponseDto>> listar(
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
+
+        Page<Fogazzas> pagina = service.listarPaginado(pageable);
+        Page<FogazzasResponseDto> resposta = pagina.map(FogazzasMapper::toResponseDto);
+        return ResponseEntity.ok(new PagedModel<>(resposta));
     }
 
     @Operation(summary = "Buscar fogazza por ID")
