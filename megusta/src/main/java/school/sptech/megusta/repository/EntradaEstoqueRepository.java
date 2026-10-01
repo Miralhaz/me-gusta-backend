@@ -1,6 +1,8 @@
 package school.sptech.megusta.repository;
 
 import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +38,20 @@ public interface EntradaEstoqueRepository extends JpaRepository<EntradaEstoque, 
             @Param("dtFim") LocalDateTime dtFim
     );
 
+    @Query("SELECT e FROM EntradaEstoque e WHERE LOWER(e.insumo.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR LOWER(e.fornecedor.nome) LIKE LOWER(CONCAT('%', :termo, '%'))")
+    Page<EntradaEstoque> findByBusca(@Param("termo") String termo, Pageable pageable);
+
+    @Query("SELECT e FROM EntradaEstoque e WHERE (LOWER(e.insumo.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR LOWER(e.fornecedor.nome) LIKE LOWER(CONCAT('%', :termo, '%'))) AND e.dtPedido BETWEEN :dataInicio AND :dataFim")
+    Page<EntradaEstoque> findByBuscaAndDataPedidoBetween(@Param("termo") String termo, @Param("dataInicio") LocalDateTime dataInicio, @Param("dataFim") LocalDateTime dataFim, Pageable pageable);
+
+    @Query("SELECT e FROM EntradaEstoque e WHERE e.tipoStatus.nome = :status")
+    Page<EntradaEstoque> findByTipoStatusNome(@Param("status") String status, Pageable pageable);
+
+    @Query("SELECT e FROM EntradaEstoque e WHERE e.tipoStatus.nome = :status AND e.dtPedido BETWEEN :dataInicio AND :dataFim")
+    Page<EntradaEstoque> findByTipoStatusNomeAndDtPedidoBetween(@Param("status") String status, @Param("dataInicio") LocalDateTime dataInicio, @Param("dataFim") LocalDateTime dataFim, Pageable pageable);
+
+    @Query("SELECT e FROM EntradaEstoque e WHERE e.dtPedido BETWEEN :dataInicio AND :dataFim")
+    Page<EntradaEstoque> findByDtPedidoBetween(@Param("dataInicio") LocalDateTime dataInicio, @Param("dataFim") LocalDateTime dataFim, Pageable pageable);
+
+    Page<EntradaEstoque> findAll(Pageable pageable);
 }

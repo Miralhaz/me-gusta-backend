@@ -8,6 +8,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import school.sptech.megusta.dto.entrada_estoque.EntradaEstoqueRequest;
@@ -30,7 +34,7 @@ public class EntradaEstoqueController {
         this.entradaEstoqueService = entradaEstoqueService;
     }
 
-    @Operation(summary = "Listar todas as entradas de estoque")
+    @Operation(summary = "Listar todas as entradas de estoque (sem paginação - compatibilidade)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = EntradaEstoqueResponse.class))),
@@ -44,6 +48,25 @@ public class EntradaEstoqueController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(EntradaEstoqueMapper.toResponse(entradas));
+    }
+
+    @Operation(summary = "Listar entradas de estoque com paginação e filtros")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página retornada com sucesso",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
+    })
+    @GetMapping("/paginado")
+    public ResponseEntity<PagedModel<EntradaEstoqueResponse>> listarPaginado(
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim,
+            @PageableDefault(size = 10, sort = "id") Pageable pageable
+    ) {
+        Page<EntradaEstoque> pagina = entradaEstoqueService.listarPaginado(busca, status, dataInicio, dataFim, pageable);
+        Page<EntradaEstoqueResponse> resposta = pagina.map(EntradaEstoqueMapper::toResponse);
+        return ResponseEntity.ok(new PagedModel<>(resposta));
     }
 
     @Operation(summary = "Buscar entrada de estoque por ID")
