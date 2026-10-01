@@ -43,4 +43,9 @@ public class UsuarioRequestDto {
     @Schema(example = "breno@megusta.com")
     private String email;
 
+    @NotBlank
+    @Size(max = 70, message = "O telefone deve ter no máximo 70 caracteres")
+    @Schema(example = "(11) 91234-5678")
+    private String telefone;
+
 }
