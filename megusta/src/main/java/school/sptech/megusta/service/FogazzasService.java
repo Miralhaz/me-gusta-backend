@@ -1,5 +1,7 @@
 package school.sptech.megusta.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
@@ -20,8 +22,8 @@ public class FogazzasService {
         this.categoriaFogazzaRepository = categoriaFogazzaRepository;
     }
 
-    public List<Fogazzas> listar() {
-        return fogazzasRepository.findAll();
+    public Page<Fogazzas> listarPaginado(Pageable pageable) {
+        return fogazzasRepository.findAll(pageable);
     }
 
     public Fogazzas buscarPorId(Integer id) {
