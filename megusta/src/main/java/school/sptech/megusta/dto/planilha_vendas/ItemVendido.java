@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Modelo interno normalizado de um item vendido extraído de uma planilha de
- * vendas. Todos os três formatos suportados (histórico de itens vendidos,
- * pedidos recentes e relatório de cardápio) são convertidos para este modelo.
+ * Modelo interno normalizado de um item vendido extraído do relatório de itens
+ * vendidos ({@link PlanilhaVendasExtractor}). É o elo entre a extração da
+ * planilha e a baixa de estoque — <b>não</b> é o contrato HTTP da importação;
+ * a resposta do endpoint é
+ * {@link school.sptech.megusta.dto.planilha_vendas.BaixaInsumoResponse}.
  */
 @Data
 @AllArgsConstructor
