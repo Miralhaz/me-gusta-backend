@@ -6,7 +6,6 @@ import org.springframework.data.repository.query.Param;
 import school.sptech.megusta.model.SaidaEstoque;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

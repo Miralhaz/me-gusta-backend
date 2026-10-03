@@ -1,13 +1,11 @@
 package school.sptech.megusta.repository;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import school.sptech.megusta.model.EntradaEstoque;
-import school.sptech.megusta.model.Insumo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
