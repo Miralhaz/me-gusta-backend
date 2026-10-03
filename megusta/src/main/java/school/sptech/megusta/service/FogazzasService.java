@@ -26,6 +26,10 @@ public class FogazzasService {
         return fogazzasRepository.findAll(pageable);
     }
 
+    public List<Fogazzas> listar() {
+        return fogazzasRepository.findAll();
+    }
+
     public Fogazzas buscarPorId(Integer id) {
         return fogazzasRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Fogazza não encontrada."));

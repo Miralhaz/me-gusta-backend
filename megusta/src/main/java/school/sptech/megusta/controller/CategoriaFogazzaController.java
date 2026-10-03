@@ -14,14 +14,17 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import school.sptech.megusta.dto.Fogazzas.FogazzasResponseDto;
 import school.sptech.megusta.dto.categoria_fogazza.CategoriaFogazzaRequestDto;
 import school.sptech.megusta.dto.categoria_fogazza.CategoriaFogazzaResponseDto;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoRequestDto;
 import school.sptech.megusta.dto.categoria_insumo.CategoriaInsumoResponseDto;
 import school.sptech.megusta.mapper.CategoriaFogazzaMapper;
 import school.sptech.megusta.mapper.CategoriaInsumoMapper;
+import school.sptech.megusta.mapper.FogazzasMapper;
 import school.sptech.megusta.model.CategoriaFogazza;
 import school.sptech.megusta.model.CategoriaInsumo;
+import school.sptech.megusta.model.Fogazzas;
 import school.sptech.megusta.service.CategoriaFogazzaService;
 
 import java.util.List;
@@ -46,7 +49,7 @@ public class CategoriaFogazzaController {
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
     @GetMapping("/paginado")
-    public ResponseEntity<PagedModel<CategoriaFogazzaResponseDto>> listar(
+    public ResponseEntity<PagedModel<CategoriaFogazzaResponseDto>> listarCategoriaPaginada(
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
         Page<CategoriaFogazza> pagina = service.listarPaginado(pageable);
@@ -61,6 +64,16 @@ public class CategoriaFogazzaController {
             @ApiResponse(responseCode = "404", description = "Categoria não encontrada", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
+
+    @GetMapping
+    public ResponseEntity<List<CategoriaFogazzaResponseDto>> listarTodos() {
+        List<CategoriaFogazza> CategoriaFogazzas = service.listar();
+        if (CategoriaFogazzas.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(CategoriaFogazzaMapper.toResponseDtoList(CategoriaFogazzas));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaFogazzaResponseDto> buscarPorId(@PathVariable Integer id){
         CategoriaFogazza categoriaFogazzaCapturada = service.buscarPorId(id);

@@ -40,7 +40,7 @@ public class FogazzasController {
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
     @GetMapping("/paginado")
-    public ResponseEntity<PagedModel<FogazzasResponseDto>> listar(
+    public ResponseEntity<PagedModel<FogazzasResponseDto>> listarFogazzaPaginado(
             @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
         Page<Fogazzas> pagina = service.listarPaginado(pageable);
@@ -55,6 +55,16 @@ public class FogazzasController {
             @ApiResponse(responseCode = "404", description = "Fogazza não encontrada", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     })
+
+    @GetMapping
+    public ResponseEntity<List<FogazzasResponseDto>> listarTodos() {
+        List<Fogazzas> fogazzas = service.listar();
+        if (fogazzas.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(FogazzasMapper.toResponseDtoList(fogazzas));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<FogazzasResponseDto> buscarPorId(@PathVariable Integer id) {
         Fogazzas fogazza = service.buscarPorId(id);
