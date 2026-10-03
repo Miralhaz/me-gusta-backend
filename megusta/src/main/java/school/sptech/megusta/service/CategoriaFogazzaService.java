@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import school.sptech.megusta.exception.RecursoConflitoException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.CategoriaFogazza;
+import school.sptech.megusta.model.Fogazzas;
 import school.sptech.megusta.repository.CategoriaFogazzaRepository;
 
 import java.util.List;
@@ -21,6 +22,10 @@ public class CategoriaFogazzaService {
 
     public Page<CategoriaFogazza> listarPaginado(Pageable pageable) {
         return categoriaFogazzaRepository.findAll(pageable);
+    }
+
+    public List<CategoriaFogazza> listar() {
+        return categoriaFogazzaRepository.findAll();
     }
 
     public CategoriaFogazza buscarPorId(Integer id) {
