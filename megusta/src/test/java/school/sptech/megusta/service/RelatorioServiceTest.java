@@ -3,7 +3,6 @@ package school.sptech.megusta.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import school.sptech.megusta.dto.relatorio.RelatorioResumoResponseDto;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 
 import java.util.List;

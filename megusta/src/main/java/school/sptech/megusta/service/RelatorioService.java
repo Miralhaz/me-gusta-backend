@@ -1,7 +1,6 @@
 package school.sptech.megusta.service;
 
 import org.springframework.stereotype.Service;
-import school.sptech.megusta.dto.relatorio.RelatorioResumoResponseDto;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 
 import java.nio.charset.StandardCharsets;

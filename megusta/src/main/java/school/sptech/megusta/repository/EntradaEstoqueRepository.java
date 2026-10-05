@@ -1,13 +1,11 @@
 package school.sptech.megusta.repository;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import school.sptech.megusta.model.EntradaEstoque;
-import school.sptech.megusta.model.Insumo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,4 +52,61 @@ public interface EntradaEstoqueRepository extends JpaRepository<EntradaEstoque, 
     Page<EntradaEstoque> findByDtPedidoBetween(@Param("dataInicio") LocalDateTime dataInicio, @Param("dataFim") LocalDateTime dataFim, Pageable pageable);
 
     Page<EntradaEstoque> findAll(Pageable pageable);
+
+    @Query("""
+    SELECT e.fornecedor.nome, SUM(e.vlTotal)
+    FROM EntradaEstoque e
+    WHERE e.dtEntrada BETWEEN :inicio AND :fim
+    GROUP BY e.fornecedor.nome
+    ORDER BY SUM(e.vlTotal) DESC
+    """)
+    List<Object[]> buscarValorCompradoPorFornecedor(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+    SELECT SUM(e.vlTotal)
+    FROM EntradaEstoque e
+    WHERE e.dtEntrada BETWEEN :inicio AND :fim
+    """)
+    BigDecimal buscarValorTotalEntradas(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+    SELECT e
+    FROM EntradaEstoque e
+    WHERE e.dtValidade BETWEEN :inicio AND :fim
+    ORDER BY e.dtValidade ASC
+    """)
+    List<EntradaEstoque> buscarVencimentosEntre(
+            @Param("inicio") LocalDate inicio,
+            @Param("fim") LocalDate fim
+    );
+
+    @Query("""
+SELECT e.fornecedor.id, e.fornecedor.nome, COUNT(e.id), SUM(e.vlTotal)
+FROM EntradaEstoque e
+WHERE e.dtEntrada BETWEEN :inicio AND :fim
+GROUP BY e.fornecedor.id, e.fornecedor.nome
+ORDER BY COUNT(e.id) DESC
+""")
+    List<Object[]> buscarFornecedoresQueMaisAbasteceram(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+SELECT e
+FROM EntradaEstoque e
+WHERE e.dtValidade < :data
+ORDER BY e.dtValidade ASC
+""")
+    List<EntradaEstoque> buscarItensVencidos(
+            @Param("data") LocalDate data
+    );
+
+
 }

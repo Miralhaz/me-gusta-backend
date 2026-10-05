@@ -37,4 +37,20 @@ public interface InsumoRepository extends JpaRepository<Insumo, Integer> {
     """)
     BigDecimal mediaConsumoDiarioPorInsumo(@Param("insumoId") Integer insumoId, @Param("dataInicio") LocalDateTime dataInicio, @Param("dataFim") LocalDateTime dataFim);
 
+    @Query("""
+    SELECT i
+    FROM Insumo i
+    WHERE i.qtdAtual <= i.estoqueMinimo
+      AND i.ativo = true
+    """)
+    List<Insumo> buscarAbaixoDoEstoqueMinimo();
+
+    @Query("""
+    SELECT i.categoriaInsumo.nome, SUM(i.qtdAtual)
+    FROM Insumo i
+    WHERE i.ativo = true
+    GROUP BY i.categoriaInsumo.nome
+    """)
+    List<Object[]> somarEstoqueAtualPorCategoria();
+
 }
