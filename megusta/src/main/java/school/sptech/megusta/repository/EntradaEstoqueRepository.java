@@ -86,5 +86,27 @@ public interface EntradaEstoqueRepository extends JpaRepository<EntradaEstoque, 
             @Param("fim") LocalDate fim
     );
 
+    @Query("""
+SELECT e.fornecedor.id, e.fornecedor.nome, COUNT(e.id), SUM(e.vlTotal)
+FROM EntradaEstoque e
+WHERE e.dtEntrada BETWEEN :inicio AND :fim
+GROUP BY e.fornecedor.id, e.fornecedor.nome
+ORDER BY COUNT(e.id) DESC
+""")
+    List<Object[]> buscarFornecedoresQueMaisAbasteceram(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+SELECT e
+FROM EntradaEstoque e
+WHERE e.dtValidade < :data
+ORDER BY e.dtValidade ASC
+""")
+    List<EntradaEstoque> buscarItensVencidos(
+            @Param("data") LocalDate data
+    );
+
 
 }

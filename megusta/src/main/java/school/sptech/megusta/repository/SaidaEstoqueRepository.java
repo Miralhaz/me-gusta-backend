@@ -40,4 +40,18 @@ public interface SaidaEstoqueRepository extends JpaRepository<SaidaEstoque, Inte
             @Param("fim") LocalDateTime fim
     );
 
+    @Query("""
+SELECT s.motivo.nome, SUM(s.quantidade)
+FROM SaidaEstoque s
+WHERE s.dtSaida BETWEEN :inicio AND :fim
+  AND s.motivo.nome IN :motivos
+GROUP BY s.motivo.nome
+ORDER BY SUM(s.quantidade) DESC
+""")
+    List<Object[]> buscarPerdasPorMotivo(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim,
+            @Param("motivos") List<String> motivos
+    );
+
 }
