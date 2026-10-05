@@ -10,290 +10,170 @@ import org.springframework.stereotype.Component;
 import school.sptech.megusta.dto.planilha_vendas.ItemVendido;
 
 import java.math.BigDecimal;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Predicate;
 
 /**
- * Extrator genérico e auto-adaptativo de itens vendidos a partir de planilhas
- * {@code .xlsx}. Substitui o reconhecimento de três formatos fixos: para cada
- * aba do workbook, identifica por heurística (cabeçalho na linha 0 + conteúdo
- * das células) a coluna de nome do item e a coluna de quantidade, sem depender
- * de layouts conhecidos.
+ * Leitor do relatório de itens vendidos em planilhas {@code .xlsx}.
  *
- * <p>Regras principais:
+ * <p>O formato reconhecido é estrito: o arquivo só é aceito quando alguma aba
+ * tem, na linha de cabeçalho, a coluna de nome do produto ({@code Nome Prod}) e
+ * a coluna de quantidade vendida ({@code Qtd.} ou {@code Qtd}). O casamento é
+ * insensível a maiúsculas/minúsculas e ignora espaços nas extremidades, mas o
+ * índice das colunas é indiferente — elas podem estar em qualquer posição e em
+ * qualquer ordem relativa. Nenhum outro layout é aceito.
+ *
+ * <p>Regras de leitura:
  * <ul>
- *   <li>Abas sem coluna de nome com corpo textual (ex.: dashboards como
- *       "Funil Loja") são ignoradas, em vez de falhar a importação.</li>
- *   <li>Células de nome com vários itens separados por {@code ;} contam
- *       1 unidade por ocorrência (a coluna de quantidade é ignorada nesse
- *       modo).</li>
+ *   <li>Cada aba que casar com a assinatura contribui com suas linhas; abas que
+ *       não casarem são ignoradas. Se nenhuma aba casar, o arquivo é considerado
+ *       não reconhecido (ver {@link #reconhecer(Workbook)}).</li>
+ *   <li>Somente as duas colunas reconhecidas são lidas — todas as demais são
+ *       ignoradas, independentemente de posição ou conteúdo.</li>
  *   <li>Linhas inválidas (nome em branco, quantidade não numérica, zero ou
  *       negativa) são ignoradas.</li>
- *   <li>O resultado final é agregado por nome (soma das quantidades), mesmo
- *       para itens repetidos entre abas diferentes.</li>
+ *   <li>O resultado é agregado por nome (soma das quantidades), mesmo para
+ *       itens repetidos entre abas diferentes.</li>
  * </ul>
  */
 @Component
 public class PlanilhaVendasExtractor {
 
-    /** Termos de cabeçalho que sugerem coluna de nome de item/produto. */
-    private static final List<String> ALIASES_COLUNA_NOME = List.of(
-            "item", "itens", "nome", "prod", "produto");
+    /** Cabeçalho normalizado da coluna de nome do produto. */
+    static final String CABECALHO_NOME_PROD = "nome prod";
 
-    /** Termos de cabeçalho de colunas que NÃO são de nome de item (metadados
-     * de loja, funis, períodos etc.), fortemente penalizados na escolha. */
-    private static final List<String> TERMOS_NAO_NOME = List.of(
-            "loja", "period", "cidade", "estado", "marca", "funil",
-            "visita", "visualiza", "sacola", "revis", "conclu", "convers",
-            "anterior", "data", "horario", "status", "numero");
+    /** Cabeçalhos normalizados aceitos para a coluna de quantidade vendida. */
+    static final List<String> CABECALHOS_QUANTIDADE = List.of("qtd.", "qtd");
 
-    /** Termos de cabeçalho que sugerem coluna de quantidade vendida. */
-    private static final List<String> ALIASES_COLUNA_QUANTIDADE = List.of(
-            "qtd", "quant", "vendas", "quantidade");
+    /** Índice de coluna inexistente — aba sem a assinatura do relatório. */
+    static final int SEM_FORMATO_RECONHECIDO = -1;
 
-    /** Termos de cabeçalho de colunas de valor/preço, penalizados na escolha
-     * da coluna de quantidade (para não confundir preço com quantidade). */
-    private static final List<String> TERMOS_VALOR_PRECO = List.of(
-            "valor", "preco", "total", "ganho", "r$");
-
-    private static final int BONUS_ALIAS_NOME = 2;
-    private static final int PENALIDADE_NAO_NOME = 3;
-    private static final int BONUS_ALIAS_QUANTIDADE = 3;
-    private static final int PENALIDADE_VALOR_PRECO = 2;
-
-    /** Índice de coluna inexistente ({@code -1}). */
-    static final int SEM_COLUNA = -1;
+    /**
+     * Índices das colunas de nome e de quantidade reconhecidos em uma aba.
+     *
+     * @param aba              nome da aba que casou com a assinatura
+     * @param colunaNome       índice da coluna de nome do produto
+     * @param colunaQuantidade índice da coluna de quantidade vendida
+     */
+    record ColunasReconhecidas(String aba, int colunaNome, int colunaQuantidade) {}
 
     private final DataFormatter dataFormatter = new DataFormatter();
 
     /**
-     * Extrai os itens vendidos de todas as abas do workbook, agregados por
-     * nome. Abas sem colunas identificáveis de item/quantidade são ignoradas.
-     * Quando nenhuma aba produz pares válidos, retorna lista vazia.
+     * Reconhece o relatório de itens vendidos no workbook: para cada aba,
+     * localiza pelo cabeçalho as colunas de nome do produto e de quantidade.
+     * A lista devolvida guarda os índices reconhecidos para {@link
+     * #extrair(Workbook, List)}.
      *
      * @param workbook planilha {@code .xlsx} aberta
-     * @return itens vendidos agregados por nome
+     * @return uma entrada por aba que casou com a assinatura; lista vazia
+     *         significa que o arquivo <b>não</b> é um relatório de itens vendidos
      */
-    public List<ItemVendido> extrair(Workbook workbook) {
-        List<ItemVendido> itens = new ArrayList<>();
+    public List<ColunasReconhecidas> reconhecer(Workbook workbook) {
+        List<ColunasReconhecidas> reconhecidas = new ArrayList<>();
         if (workbook == null) {
-            return itens;
+            return reconhecidas;
         }
         for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-            itens.addAll(extrairAba(workbook.getSheetAt(i)));
+            Sheet aba = workbook.getSheetAt(i);
+            int colunaNome = localizarColunaNome(aba);
+            int colunaQuantidade = localizarColunaQuantidade(aba);
+            if (colunaNome != SEM_FORMATO_RECONHECIDO && colunaQuantidade != SEM_FORMATO_RECONHECIDO) {
+                reconhecidas.add(new ColunasReconhecidas(aba.getSheetName(), colunaNome, colunaQuantidade));
+            }
+        }
+        return reconhecidas;
+    }
+
+    /**
+     * Reconhece o formato e extrai os itens vendidos de todas as abas que
+     * casaram com a assinatura, agregados por nome.
+     *
+     * @param workbook planilha {@code .xlsx} aberta
+     * @return itens vendidos agregados por nome; lista vazia quando o arquivo
+     *         não é reconhecido ou quando nenhuma linha é válida
+     */
+    public List<ItemVendido> extrair(Workbook workbook) {
+        return extrair(workbook, reconhecer(workbook));
+    }
+
+    /**
+     * Extrai os itens vendidos das abas já reconhecidas, agregados por nome.
+     *
+     * @param workbook      planilha {@code .xlsx} aberta
+     * @param reconhecidas abas reconhecidas por {@link #reconhecer(Workbook)}
+     * @return itens vendidos agregados por nome
+     */
+    public List<ItemVendido> extrair(Workbook workbook, List<ColunasReconhecidas> reconhecidas) {
+        List<ItemVendido> itens = new ArrayList<>();
+        if (workbook == null || reconhecidas == null || reconhecidas.isEmpty()) {
+            return itens;
+        }
+        for (ColunasReconhecidas colunas : reconhecidas) {
+            Sheet aba = workbook.getSheet(colunas.aba());
+            if (aba != null) {
+                itens.addAll(extrairAba(aba, colunas));
+            }
         }
         return ItemVendido.agregarPorNome(itens);
     }
 
     /**
-     * Extrai os pares (nome, quantidade) de uma única aba. Aba sem coluna de
-     * nome com corpo textual (ou sem coluna de quantidade) é ignorada;
-     * colunas de nome com células {@code ;}-separadas entram no modo de
-     * contagem de 1 unidade por ocorrência.
+     * Localiza a coluna de nome do produto pelo cabeçalho normalizado
+     * ({@code Nome Prod}). Retorna {@link #SEM_FORMATO_RECONHECIDO} quando a aba
+     * não tem essa coluna.
      */
-    List<ItemVendido> extrairAba(Sheet aba) {
+    int localizarColunaNome(Sheet aba) {
+        return localizarColuna(aba, cabecalho -> CABECALHO_NOME_PROD.equals(cabecalho));
+    }
+
+    /**
+     * Localiza a coluna de quantidade vendida pelo cabeçalho normalizado
+     * ({@code Qtd.} ou {@code Qtd}). Retorna {@link #SEM_FORMATO_RECONHECIDO}
+     * quando a aba não tem essa coluna.
+     */
+    int localizarColunaQuantidade(Sheet aba) {
+        return localizarColuna(aba, CABECALHOS_QUANTIDADE::contains);
+    }
+
+    private int localizarColuna(Sheet aba, Predicate<String> casa) {
         Row cabecalho = aba.getRow(0);
         if (cabecalho == null) {
-            return List.of();
+            return SEM_FORMATO_RECONHECIDO;
         }
-
-        int colunaNome = identificarColunaNome(aba);
-        if (colunaNome == SEM_COLUNA) {
-            return List.of();
+        for (int coluna = 0; coluna < cabecalho.getLastCellNum(); coluna++) {
+            if (casa.test(normalizar(valorTexto(cabecalho.getCell(coluna))))) {
+                return coluna;
+            }
         }
-
-        if (temCelulasComPontoEVirgula(aba, colunaNome)) {
-            return extrairModoPontoEVirgula(aba, colunaNome);
-        }
-
-        int colunaQuantidade = identificarColunaQuantidade(aba);
-        if (colunaQuantidade == SEM_COLUNA) {
-            return List.of();
-        }
-
-        return extrairParesNomeQuantidade(aba, colunaNome, colunaQuantidade);
+        return SEM_FORMATO_RECONHECIDO;
     }
 
     /**
-     * Identifica por heurística a coluna de nome do item: colunas sem células
-     * textuais no corpo não concorrem; a pontuação é a quantidade de células
-     * textuais somada a um bônus por termo de cabeçalho de item/produto e
-     * descontada por termos de metadados (loja, funil, períodos etc.).
-     * Retorna {@link #SEM_COLUNA} quando nenhuma coluna pontua acima de zero.
+     * Lê as linhas de uma aba a partir das duas colunas reconhecidas. Linhas com
+     * nome em branco ou quantidade ausente, não numérica, zero ou negativa são
+     * ignoradas.
      */
-    int identificarColunaNome(Sheet aba) {
-        Row cabecalho = aba.getRow(0);
-        int melhorColuna = SEM_COLUNA;
-        int melhorPontuacao = 0;
-
-        for (int coluna = 0; cabecalho != null && coluna <= cabecalho.getLastCellNum(); coluna++) {
-            int pontuacao = pontuarColunaNome(aba, cabecalho, coluna);
-            if (pontuacao > melhorPontuacao) {
-                melhorPontuacao = pontuacao;
-                melhorColuna = coluna;
-            }
-        }
-        return melhorColuna;
-    }
-
-    /**
-     * Identifica por heurística a coluna de quantidade: colunas sem células
-     * numéricas no corpo não concorrem; a pontuação é a quantidade de células
-     * numéricas somada a um bônus por termo de cabeçalho de quantidade e
-     * descontada por termos de valor/preço. Retorna {@link #SEM_COLUNA}
-     * quando nenhuma coluna pontua acima de zero.
-     */
-    int identificarColunaQuantidade(Sheet aba) {
-        Row cabecalho = aba.getRow(0);
-        int melhorColuna = SEM_COLUNA;
-        int melhorPontuacao = 0;
-
-        for (int coluna = 0; cabecalho != null && coluna <= cabecalho.getLastCellNum(); coluna++) {
-            int pontuacao = pontuarColunaQuantidade(aba, cabecalho, coluna);
-            if (pontuacao > melhorPontuacao) {
-                melhorPontuacao = pontuacao;
-                melhorColuna = coluna;
-            }
-        }
-        return melhorColuna;
-    }
-
-    private int pontuarColunaNome(Sheet aba, Row cabecalho, int coluna) {
-        int celulasTextuais = contarCelulasTextuais(aba, coluna);
-        if (celulasTextuais == 0) {
-            return 0;
-        }
-
-        String titulo = normalizar(valorTexto(cabecalho.getCell(coluna)));
-        if (titulo == null) {
-            return 0;
-        }
-
-        int pontuacao = celulasTextuais;
-        for (String alias : ALIASES_COLUNA_NOME) {
-            if (titulo.contains(alias)) {
-                pontuacao += BONUS_ALIAS_NOME;
-            }
-        }
-        for (String termo : TERMOS_NAO_NOME) {
-            if (titulo.contains(termo)) {
-                pontuacao -= PENALIDADE_NAO_NOME;
-            }
-        }
-        return pontuacao;
-    }
-
-    private int pontuarColunaQuantidade(Sheet aba, Row cabecalho, int coluna) {
-        int celulasNumericas = contarCelulasNumericas(aba, coluna);
-        if (celulasNumericas == 0) {
-            return 0;
-        }
-
-        String titulo = normalizar(valorTexto(cabecalho.getCell(coluna)));
-        if (titulo == null) {
-            return 0;
-        }
-
-        int pontuacao = celulasNumericas;
-        for (String alias : ALIASES_COLUNA_QUANTIDADE) {
-            if (titulo.contains(alias)) {
-                pontuacao += BONUS_ALIAS_QUANTIDADE;
-            }
-        }
-        for (String termo : TERMOS_VALOR_PRECO) {
-            if (titulo.contains(termo)) {
-                pontuacao -= PENALIDADE_VALOR_PRECO;
-            }
-        }
-        return pontuacao;
-    }
-
-    private List<ItemVendido> extrairParesNomeQuantidade(Sheet aba, int colunaNome, int colunaQuantidade) {
+    private List<ItemVendido> extrairAba(Sheet aba, ColunasReconhecidas colunas) {
         List<ItemVendido> itens = new ArrayList<>();
         for (int i = 1; i <= aba.getLastRowNum(); i++) {
             Row linha = aba.getRow(i);
             if (linha == null) {
                 continue;
             }
-            String nome = valorTexto(linha.getCell(colunaNome));
+            String nome = valorTexto(linha.getCell(colunas.colunaNome()));
             if (nome == null || nome.isBlank()) {
                 continue;
             }
-            BigDecimal quantidade = valorQuantidade(linha.getCell(colunaQuantidade));
+            BigDecimal quantidade = valorQuantidade(linha.getCell(colunas.colunaQuantidade()));
             if (quantidade == null || quantidade.signum() <= 0) {
                 continue;
             }
             itens.add(new ItemVendido(nome, quantidade));
         }
         return itens;
-    }
-
-    private List<ItemVendido> extrairModoPontoEVirgula(Sheet aba, int colunaNome) {
-        List<ItemVendido> itens = new ArrayList<>();
-        for (int i = 1; i <= aba.getLastRowNum(); i++) {
-            Row linha = aba.getRow(i);
-            if (linha == null) {
-                continue;
-            }
-            String celula = valorTexto(linha.getCell(colunaNome));
-            if (celula == null || celula.isBlank()) {
-                continue;
-            }
-            for (String nome : celula.split(";")) {
-                String nomeLimpo = nome.trim();
-                if (!nomeLimpo.isEmpty()) {
-                    itens.add(new ItemVendido(nomeLimpo, BigDecimal.ONE));
-                }
-            }
-        }
-        return itens;
-    }
-
-    private boolean temCelulasComPontoEVirgula(Sheet aba, int colunaNome) {
-        for (int i = 1; i <= aba.getLastRowNum(); i++) {
-            Row linha = aba.getRow(i);
-            if (linha == null) {
-                continue;
-            }
-            String celula = valorTexto(linha.getCell(colunaNome));
-            if (celula != null && celula.contains(";")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private int contarCelulasTextuais(Sheet aba, int coluna) {
-        int total = 0;
-        for (int i = 1; i <= aba.getLastRowNum(); i++) {
-            Row linha = aba.getRow(i);
-            if (linha == null) {
-                continue;
-            }
-            Cell celula = linha.getCell(coluna);
-            if (celula != null && celula.getCellType() == CellType.STRING
-                    && !celula.getStringCellValue().isBlank()) {
-                total++;
-            }
-        }
-        return total;
-    }
-
-    private int contarCelulasNumericas(Sheet aba, int coluna) {
-        int total = 0;
-        for (int i = 1; i <= aba.getLastRowNum(); i++) {
-            Row linha = aba.getRow(i);
-            if (linha == null) {
-                continue;
-            }
-            Cell celula = linha.getCell(coluna);
-            if (celula != null && celula.getCellType() == CellType.NUMERIC) {
-                total++;
-            }
-        }
-        return total;
     }
 
     private String valorTexto(Cell celula) {
@@ -336,13 +216,12 @@ public class PlanilhaVendasExtractor {
         };
     }
 
-    /** Normaliza o texto de cabeçalho: minúsculas, sem acentos. */
+    /**
+     * Normaliza o cabeçalho para comparação: apenas espaços nas extremidades e
+     * caixa. {@link Locale#ROOT} é usado para que o resultado não dependa do
+     * locale do sistema (o servidor roda em {@code pt_BR}).
+     */
     private String normalizar(String valor) {
-        if (valor == null) {
-            return null;
-        }
-        String semAcentos = Normalizer.normalize(valor, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "");
-        return semAcentos.toLowerCase(Locale.ROOT);
+        return valor == null ? null : valor.trim().toLowerCase(Locale.ROOT);
     }
 }

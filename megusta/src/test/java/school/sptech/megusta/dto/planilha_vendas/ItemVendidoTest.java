@@ -7,6 +7,11 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Testes de {@link ItemVendido}, que é o modelo interno entre a extração da
+ * planilha e a baixa de estoque — não é o contrato HTTP da importação (a
+ * resposta do endpoint é {@link BaixaInsumoResponse}).
+ */
 @DisplayName("Testes de ItemVendido (agregação por nome)")
 class ItemVendidoTest {
 

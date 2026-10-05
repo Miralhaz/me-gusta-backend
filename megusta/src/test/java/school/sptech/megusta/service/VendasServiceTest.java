@@ -11,21 +11,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import school.sptech.megusta.dto.planilha_vendas.BaixaInsumoResponse;
 import school.sptech.megusta.dto.planilha_vendas.ItemVendido;
 import school.sptech.megusta.exception.AcessoNegadoException;
 import school.sptech.megusta.exception.EstoqueInsuficienteException;
+import school.sptech.megusta.exception.PlanilhaInvalidaException;
 import school.sptech.megusta.model.FogazzaInsumo;
 import school.sptech.megusta.model.Fogazzas;
 import school.sptech.megusta.model.Insumo;
 import school.sptech.megusta.model.Motivo;
 import school.sptech.megusta.model.SaidaEstoque;
 import school.sptech.megusta.model.TipoStatus;
+import school.sptech.megusta.model.UnidadeMedida;
 import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.repository.FogazzaInsumoRepository;
 import school.sptech.megusta.repository.FogazzasRepository;
@@ -36,7 +38,6 @@ import school.sptech.megusta.repository.SaidaEstoqueRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -81,16 +82,12 @@ class VendasServiceTest {
     }
 
     // ---------------------------------------------------------------
-    // 3.1 - Extração genérica da planilha (delega ao PlanilhaVendasExtractor)
-    // ---------------------------------------------------------------
-
-    // ---------------------------------------------------------------
-    // 3.3 - Leitor do formato histórico de itens vendidos
+    // Leitura do relatório de itens vendidos
     // ---------------------------------------------------------------
 
     @Test
-    @DisplayName("Deve extrair itens do formato histórico de itens vendidos")
-    void deveExtrairItensDoFormatoHistorico() throws IOException {
+    @DisplayName("Deve extrair os itens vendidos do relatório de itens vendidos")
+    void deveExtrairItensDoRelatorioDeItensVendidos() throws IOException {
         List<ItemVendido> itens = vendasService.lerPlanilha(
                 arquivo("/historico_itens_vendidos.xlsx", "historico.xlsx"));
 
@@ -99,45 +96,8 @@ class VendasServiceTest {
         Assertions.assertEquals(BigDecimal.valueOf(1.0), itens.get(0).getQuantidade());
     }
 
-    // ---------------------------------------------------------------
-    // 3.4 - Leitor do formato de pedidos recentes
-    // ---------------------------------------------------------------
-
     @Test
-    @DisplayName("Deve extrair itens do formato de pedidos recentes contando 1 unidade por ocorrência")
-    void deveExtrairItensDoFormatoPedidosRecentes() throws IOException {
-        List<ItemVendido> itens = vendasService.lerPlanilha(
-                arquivo("/pedidos_recentes.xlsx", "pedidos.xlsx"));
-
-        Assertions.assertEquals(2, itens.size());
-        Assertions.assertTrue(itens.contains(new ItemVendido("Fogazza de Mussarela (Pizza)", BigDecimal.ONE)));
-        Assertions.assertTrue(itens.contains(new ItemVendido("Fogazza de Portuguesa", BigDecimal.ONE)));
-    }
-
-    // ---------------------------------------------------------------
-    // 3.5 - Leitor do formato de relatório de cardápio
-    // ---------------------------------------------------------------
-
-    @Test
-    @DisplayName("Deve extrair itens do relatório de cardápio somando as abas Itens e Complementos")
-    void deveExtrairItensDoFormatoRelatorioCardapio() throws IOException {
-        List<ItemVendido> itens = vendasService.lerPlanilha(
-                arquivo("/relatorio_cardapio.xlsx", "relatorio.xlsx"));
-
-        Assertions.assertEquals(42, itens.size());
-        // soma das abas "Itens" (10) e "Complementos" (14)
-        Assertions.assertEquals(BigDecimal.valueOf(24.0), quantidadeDe(itens, "Fogazza de Mussarela (Pizza)"));
-        Assertions.assertEquals(BigDecimal.valueOf(14.0), quantidadeDe(itens, "Fogazza de Portuguesa"));
-        Assertions.assertEquals(BigDecimal.valueOf(21.0), quantidadeDe(itens, "Não enviar Ketchup e mostarda"));
-        Assertions.assertEquals(BigDecimal.valueOf(1.0), quantidadeDe(itens, "Coca-Cola Original 350ml"));
-    }
-
-    // ---------------------------------------------------------------
-    // 3.6 - Linhas inválidas (quantidade não numérica, sem nome, em branco)
-    // ---------------------------------------------------------------
-
-    @Test
-    @DisplayName("Deve ignorar linhas sem nome, com quantidade não numérica, zero ou em branco")
+    @DisplayName("Deve ignorar linhas sem nome, com quantidade não numérica, zero ou negativa")
     void deveIgnorarLinhasInvalidas() throws IOException {
         List<ItemVendido> itens = vendasService.lerPlanilha(planilhaComLinhasInvalidas());
 
@@ -146,8 +106,62 @@ class VendasServiceTest {
         Assertions.assertEquals(BigDecimal.valueOf(2.0), itens.get(0).getQuantidade());
     }
 
+    @Test
+    @DisplayName("Deve lançar PlanilhaInvalidaException para planilha sem a assinatura Nome Prod + Qtd.")
+    void deveLancarPlanilhaInvalidaParaLayoutNaoSuportado() throws IOException {
+        MockMultipartFile planilha = arquivoPlanilha("produtos.xlsx",
+                new String[]{"Produto", "Valor Total"},
+                new Object[][]{{"Fogazza de Mussarela", 65.80}});
+
+        PlanilhaInvalidaException excecao = Assertions.assertThrows(PlanilhaInvalidaException.class,
+                () -> vendasService.lerPlanilha(planilha));
+
+        Assertions.assertTrue(excecao.getMessage().contains("produtos.xlsx"));
+        Assertions.assertTrue(excecao.getMessage().contains("Nome Prod"));
+        Assertions.assertTrue(excecao.getMessage().contains("Qtd."));
+    }
+
+    @Test
+    @DisplayName("Deve lançar PlanilhaInvalidaException para a planilha de Pedidos Recentes")
+    void deveLancarPlanilhaInvalidaParaPedidosRecentes() throws IOException {
+        MockMultipartFile planilha = arquivoPlanilha("pedidos.xlsx",
+                new String[]{"Número do pedido", "Status do pedido", "Itens", "Ganhos"},
+                new Object[][]{
+                        {"6406", "Concluído", "Fogazza de Mussarela;Fogazza de Portuguesa;", 65.28},
+                        {"6407", "Concluído", "Fogazza de Mussarela", 32.90}
+                });
+
+        Assertions.assertThrows(PlanilhaInvalidaException.class, () -> vendasService.lerPlanilha(planilha));
+    }
+
+    @Test
+    @DisplayName("Deve lançar PlanilhaInvalidaException quando a planilha tem Nome Prod mas não Qtd.")
+    void deveLancarPlanilhaInvalidaQuandoFaltaColunaQuantidade() throws IOException {
+        MockMultipartFile planilha = arquivoPlanilha("nome_sem_qtd.xlsx",
+                new String[]{"Itens", "Nome Prod"},
+                new Object[][]{{"Fogazza de Mussarela;Fogazza de Portuguesa;", "Pedido 6406"}});
+
+        Assertions.assertThrows(PlanilhaInvalidaException.class, () -> vendasService.lerPlanilha(planilha));
+    }
+
+    @Test
+    @DisplayName("Deve rejeitar a planilha não reconhecida sem chamar nenhum repository de escrita")
+    void deveRejeitarPlanilhaNaoReconhecidaSemEscreverNoBanco() throws IOException {
+        autenticar();
+        MockMultipartFile planilha = arquivoPlanilha("produtos.xlsx",
+                new String[]{"Produto", "Valor Total"},
+                new Object[][]{{"Fogazza de Mussarela", 65.80}});
+
+        Assertions.assertThrows(PlanilhaInvalidaException.class,
+                () -> vendasService.importarPlanilha(planilha));
+
+        verify(insumoRepository, never()).save(any(Insumo.class));
+        verify(saidaEstoqueRepository, never()).save(any(SaidaEstoque.class));
+        verify(motivoRepository, never()).save(any(Motivo.class));
+    }
+
     // ---------------------------------------------------------------
-    // 4.1/4.4 - Orquestração: consultas, acumulação e persistência
+    // Orquestração: consultas, acumulação, persistência e resposta por insumo
     // ---------------------------------------------------------------
 
     @Test
@@ -180,7 +194,7 @@ class VendasServiceTest {
         when(insumoRepository.findById(11)).thenReturn(Optional.of(insumo11));
         when(tipoStatusService.calcularStatusEstoque(any(), any())).thenReturn(status);
 
-        vendasService.baixarEstoque(List.of(item));
+        List<BaixaInsumoResponse> baixas = vendasService.baixarEstoque(List.of(item));
 
         verify(fogazzasRepository).findByNomeIgnoreCase("Fogazza de Mussarela");
         verify(fogazzaInsumoRepository).findByFogazzaId(1);
@@ -210,10 +224,139 @@ class VendasServiceTest {
         Assertions.assertSame(usuarioAtivo, saidaInsumo10.getUsuario());
         Assertions.assertEquals(motivo, saidaInsumo11.getMotivo());
         Assertions.assertSame(usuarioAtivo, saidaInsumo11.getUsuario());
+
+        Assertions.assertEquals(2, baixas.size());
+    }
+
+    @Test
+    @DisplayName("Deve descrever a baixa de cada insumo com a quantidade antes, subtraída e depois")
+    void deveDescreverBaixaDeCadaInsumoComQuantidadesAntesSubtraidaEDepois() {
+        autenticar();
+        Motivo motivo = new Motivo();
+        motivo.setId(5);
+        motivo.setNome("Venda");
+
+        Fogazzas fogazza = new Fogazzas();
+        fogazza.setId(1);
+        fogazza.setNome("Fogazza de Mussarela");
+
+        Insumo insumo = insumo(10, 100.0);
+        insumo.setNome("Farinha de Trigo");
+        insumo.setCodigoInsumo("FT-001");
+        FogazzaInsumo registro = registro(insumo, "3");
+
+        // 4 fogazzas × 3 de insumo = 12 consumidos de um estoque de 100
+        ItemVendido item = new ItemVendido("Fogazza de Mussarela", BigDecimal.valueOf(4));
+
+        when(fogazzasRepository.findByNomeIgnoreCase("Fogazza de Mussarela")).thenReturn(Optional.of(fogazza));
+        when(fogazzaInsumoRepository.findByFogazzaId(1)).thenReturn(List.of(registro));
+        when(motivoRepository.findByNomeIgnoreCase("Venda")).thenReturn(Optional.of(motivo));
+        when(insumoRepository.findById(10)).thenReturn(Optional.of(insumo));
+        when(tipoStatusService.calcularStatusEstoque(any(), any())).thenReturn(new TipoStatus());
+
+        List<BaixaInsumoResponse> baixas = vendasService.baixarEstoque(List.of(item));
+
+        Assertions.assertEquals(1, baixas.size());
+        BaixaInsumoResponse baixa = baixas.get(0);
+        Assertions.assertEquals("Farinha de Trigo", baixa.getNomeInsumo());
+        Assertions.assertEquals("FT-001", baixa.getCodigoInsumo());
+        Assertions.assertEquals("kg", baixa.getUnidadeMedida());
+        Assertions.assertEquals(new BigDecimal("100.0"), baixa.getQuantidadeAtual());
+        Assertions.assertEquals(new BigDecimal("12"), baixa.getQuantidadeSubtraida());
+        Assertions.assertEquals(new BigDecimal("88.0"), baixa.getQuantidadeAposSubtracao());
+        Assertions.assertEquals(88.0, insumo.getQtdAtual());
+    }
+
+    @Test
+    @DisplayName("Deve devolver um único registro do insumo consumido por duas fogazzas diferentes")
+    void deveDevolverRegistroUnicoParaInsumoConsumidoPorDuasFogazzas() {
+        autenticar();
+        Motivo motivo = new Motivo();
+        motivo.setId(5);
+        motivo.setNome("Venda");
+
+        Fogazzas mussarela = new Fogazzas();
+        mussarela.setId(1);
+        mussarela.setNome("Fogazza de Mussarela");
+
+        Fogazzas portuguesa = new Fogazzas();
+        portuguesa.setId(2);
+        portuguesa.setNome("Fogazza de Portuguesa");
+
+        Insumo insumo = insumo(10, 100.0);
+        insumo.setNome("Farinha de Trigo");
+        insumo.setCodigoInsumo("FT-001");
+        FogazzaInsumo receitaMussarela = registro(insumo, "2");
+        FogazzaInsumo receitaPortuguesa = registro(insumo, "3");
+
+        ItemVendido item1 = new ItemVendido("Fogazza de Mussarela", BigDecimal.valueOf(3));
+        ItemVendido item2 = new ItemVendido("Fogazza de Portuguesa", BigDecimal.valueOf(2));
+
+        when(fogazzasRepository.findByNomeIgnoreCase("Fogazza de Mussarela")).thenReturn(Optional.of(mussarela));
+        when(fogazzasRepository.findByNomeIgnoreCase("Fogazza de Portuguesa")).thenReturn(Optional.of(portuguesa));
+        when(fogazzaInsumoRepository.findByFogazzaId(1)).thenReturn(List.of(receitaMussarela));
+        when(fogazzaInsumoRepository.findByFogazzaId(2)).thenReturn(List.of(receitaPortuguesa));
+        when(motivoRepository.findByNomeIgnoreCase("Venda")).thenReturn(Optional.of(motivo));
+        when(insumoRepository.findById(10)).thenReturn(Optional.of(insumo));
+        when(tipoStatusService.calcularStatusEstoque(any(), any())).thenReturn(new TipoStatus());
+
+        List<BaixaInsumoResponse> baixas = vendasService.baixarEstoque(List.of(item1, item2));
+
+        // 3 × 2 + 2 × 3 = 12 consumidos, em um único registro
+        Assertions.assertEquals(1, baixas.size());
+        Assertions.assertEquals(new BigDecimal("12"), baixas.get(0).getQuantidadeSubtraida());
+        Assertions.assertEquals(new BigDecimal("100.0"), baixas.get(0).getQuantidadeAtual());
+        Assertions.assertEquals(new BigDecimal("88.0"), baixas.get(0).getQuantidadeAposSubtracao());
+        Assertions.assertEquals(88.0, insumo.getQtdAtual());
+
+        verify(insumoRepository, times(1)).save(insumo);
+        verify(saidaEstoqueRepository, times(1)).save(any(SaidaEstoque.class));
+    }
+
+    @Test
+    @DisplayName("importarPlanilha deve devolver os insumos alterados, e não os itens lidos")
+    void deveDevolverOsInsumosAlteradosENaoOsItensLidos() throws IOException {
+        autenticar();
+        Motivo motivo = new Motivo();
+        motivo.setId(5);
+        motivo.setNome("Venda");
+
+        Fogazzas fogazza = new Fogazzas();
+        fogazza.setId(1);
+        fogazza.setNome("Fogazza de Mussarela");
+
+        Insumo insumo = insumo(10, 50.0);
+        insumo.setNome("Farinha de Trigo");
+        insumo.setCodigoInsumo("FT-001");
+        FogazzaInsumo registro = registro(insumo, "2");
+
+        when(fogazzasRepository.findByNomeIgnoreCase("Fogazza de Mussarela")).thenReturn(Optional.of(fogazza));
+        when(fogazzaInsumoRepository.findByFogazzaId(1)).thenReturn(List.of(registro));
+        when(motivoRepository.findByNomeIgnoreCase("Venda")).thenReturn(Optional.of(motivo));
+        when(insumoRepository.findById(10)).thenReturn(Optional.of(insumo));
+        when(tipoStatusService.calcularStatusEstoque(any(), any())).thenReturn(new TipoStatus());
+
+        // Três itens vendidos, mas só um tem fogazza cadastrada
+        MockMultipartFile planilha = arquivoPlanilha("relatorio.xlsx",
+                new String[]{"Data/Hora Item", "Qtd.", "Nome Prod"},
+                new Object[][]{
+                        {"01/07/2026 19:32", 5, "Fogazza de Mussarela"},
+                        {"01/07/2026 19:40", 3, "Coca-Cola Zero 350ml"},
+                        {"01/07/2026 19:50", 2, "Promoção que não existe"}
+                });
+
+        List<BaixaInsumoResponse> baixas = vendasService.importarPlanilha(planilha);
+
+        // A resposta traz o insumo alterado (5 × 2 = 10), não os 3 itens lidos
+        Assertions.assertEquals(1, baixas.size());
+        Assertions.assertEquals("Farinha de Trigo", baixas.get(0).getNomeInsumo());
+        Assertions.assertEquals(new BigDecimal("10.0"), baixas.get(0).getQuantidadeSubtraida());
+        Assertions.assertEquals(new BigDecimal("50.0"), baixas.get(0).getQuantidadeAtual());
+        Assertions.assertEquals(new BigDecimal("40.0"), baixas.get(0).getQuantidadeAposSubtracao());
     }
 
     // ---------------------------------------------------------------
-    // 4.2 - Resolução do usuário autenticado
+    // Resolução do usuário autenticado
     // ---------------------------------------------------------------
 
     @Test
@@ -238,7 +381,7 @@ class VendasServiceTest {
     }
 
     // ---------------------------------------------------------------
-    // 4.3 - Resolução do motivo "Venda"
+    // Resolução do motivo "Venda"
     // ---------------------------------------------------------------
 
     @Test
@@ -288,7 +431,7 @@ class VendasServiceTest {
     }
 
     // ---------------------------------------------------------------
-    // 4.5 - Itens sem fogazza cadastrada e fogazza sem insumos
+    // Itens sem fogazza cadastrada e fogazza sem insumos
     // ---------------------------------------------------------------
 
     @Test
@@ -316,13 +459,34 @@ class VendasServiceTest {
         when(insumoRepository.findById(10)).thenReturn(Optional.of(insumo));
         when(tipoStatusService.calcularStatusEstoque(any(), any())).thenReturn(new TipoStatus());
 
-        Assertions.assertDoesNotThrow(() ->
-                vendasService.baixarEstoque(List.of(encontrada, naoEncontrada)));
+        List<BaixaInsumoResponse> baixas =
+                Assertions.assertDoesNotThrow(() -> vendasService.baixarEstoque(List.of(encontrada, naoEncontrada)));
 
         verify(fogazzasRepository).findByNomeIgnoreCase("Fogazza de Mussarela");
         verify(fogazzasRepository).findByNomeIgnoreCase("Refrigerante Coca-Cola 350ml");
         verify(insumoRepository).save(insumo);
         Assertions.assertEquals(98.0, insumo.getQtdAtual());
+        Assertions.assertEquals(1, baixas.size());
+    }
+
+    @Test
+    @DisplayName("Deve devolver lista vazia quando nenhum nome corresponde a uma fogazza cadastrada")
+    void deveDevolverListaVaziaQuandoNenhumNomeCorrespondeAFogazza() {
+        autenticar();
+        Motivo motivo = new Motivo();
+        motivo.setId(5);
+        motivo.setNome("Venda");
+
+        when(motivoRepository.findByNomeIgnoreCase("Venda")).thenReturn(Optional.of(motivo));
+        when(fogazzasRepository.findByNomeIgnoreCase(any())).thenReturn(Optional.empty());
+
+        List<BaixaInsumoResponse> baixas = vendasService.baixarEstoque(List.of(
+                new ItemVendido("Compre 3 Fogazzas - Ganhe refri 350ml", BigDecimal.valueOf(5)),
+                new ItemVendido("Promoção inexistente", BigDecimal.ONE)));
+
+        Assertions.assertTrue(baixas.isEmpty());
+        verify(insumoRepository, never()).save(any(Insumo.class));
+        verify(saidaEstoqueRepository, never()).save(any(SaidaEstoque.class));
     }
 
     @Test
@@ -341,14 +505,16 @@ class VendasServiceTest {
         when(fogazzaInsumoRepository.findByFogazzaId(1)).thenReturn(List.of());
         when(motivoRepository.findByNomeIgnoreCase("Venda")).thenReturn(Optional.of(motivo));
 
-        vendasService.baixarEstoque(List.of(new ItemVendido("Fogazza de Mussarela", BigDecimal.ONE)));
+        List<BaixaInsumoResponse> baixas =
+                vendasService.baixarEstoque(List.of(new ItemVendido("Fogazza de Mussarela", BigDecimal.ONE)));
 
+        Assertions.assertTrue(baixas.isEmpty());
         verify(insumoRepository, never()).save(any(Insumo.class));
         verify(saidaEstoqueRepository, never()).save(any(SaidaEstoque.class));
     }
 
     // ---------------------------------------------------------------
-    // 4.6 - Comportamento atômico (rollback)
+    // Comportamento atômico (rollback)
     // ---------------------------------------------------------------
 
     @Test
@@ -373,7 +539,7 @@ class VendasServiceTest {
     }
 
     // ---------------------------------------------------------------
-    // 4.7 - Estoque insuficiente (qtdAtual < consumo da importação)
+    // Estoque insuficiente (qtdAtual < consumo da importação)
     // ---------------------------------------------------------------
 
     @Test
@@ -468,9 +634,12 @@ class VendasServiceTest {
         when(insumoRepository.findById(10)).thenReturn(Optional.of(insumo));
         when(tipoStatusService.calcularStatusEstoque(any(), any())).thenReturn(new TipoStatus());
 
-        Assertions.assertDoesNotThrow(() -> vendasService.baixarEstoque(List.of(item)));
+        List<BaixaInsumoResponse> baixas =
+                Assertions.assertDoesNotThrow(() -> vendasService.baixarEstoque(List.of(item)));
 
         Assertions.assertEquals(0.0, insumo.getQtdAtual());
+        Assertions.assertEquals(new BigDecimal("12.0"), baixas.get(0).getQuantidadeAtual());
+        Assertions.assertEquals(new BigDecimal("0.0"), baixas.get(0).getQuantidadeAposSubtracao());
         verify(insumoRepository).save(insumo);
         verify(saidaEstoqueRepository).save(any(SaidaEstoque.class));
     }
@@ -488,10 +657,15 @@ class VendasServiceTest {
     }
 
     private Insumo insumo(Integer id, Double qtdAtual) {
+        UnidadeMedida unidade = new UnidadeMedida();
+        unidade.setId(1);
+        unidade.setUnidade("kg");
+
         Insumo insumo = new Insumo();
         insumo.setId(id);
         insumo.setQtdAtual(qtdAtual);
         insumo.setEstoqueMinimo(20.0);
+        insumo.setUnidadeMedida(unidade);
         return insumo;
     }
 
@@ -520,15 +694,11 @@ class VendasServiceTest {
         return new ItemVendido(nome, BigDecimal.ONE);
     }
 
-    private InputStream getResource(String caminho) {
+    private MockMultipartFile arquivo(String caminho, String nomeArquivo) throws IOException {
         InputStream in = getClass().getResourceAsStream(caminho);
         Assertions.assertNotNull(in, "Recurso de teste não encontrado: " + caminho);
-        return in;
-    }
-
-    private MockMultipartFile arquivo(String caminho, String nomeArquivo) throws IOException {
         byte[] bytes;
-        try (InputStream in = getResource(caminho)) {
+        try (in) {
             bytes = in.readAllBytes();
         }
         return new MockMultipartFile(
@@ -538,42 +708,51 @@ class VendasServiceTest {
                 bytes);
     }
 
-    private MockMultipartFile planilhaComLinhasInvalidas() throws IOException {
+    private MockMultipartFile arquivoPlanilha(String nomeArquivo, String[] cabecalho, Object[][] linhas)
+            throws IOException {
         byte[] bytes;
         try (XSSFWorkbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             Sheet aba = workbook.createSheet("Sheet");
-            Row cabecalho = aba.createRow(0);
-            cabecalho.createCell(0).setCellValue("Data/Hora Item");
-            cabecalho.createCell(1).setCellValue("Qtd.");
-            cabecalho.createCell(5).setCellValue("Nome Prod");
-
-            Row valida = aba.createRow(1);
-            valida.createCell(1).setCellValue(2);
-            valida.createCell(5).setCellValue("Fogazza de Mussarela");
-
-            Row naoNumerica = aba.createRow(2);
-            naoNumerica.createCell(1).setCellValue("abc");
-            naoNumerica.createCell(5).setCellValue("Fogazza de Portuguesa");
-
-            Row semNome = aba.createRow(3);
-            semNome.createCell(1).setCellValue(5);
-
-            aba.createRow(4);
-
-            Row quantidadeZero = aba.createRow(5);
-            quantidadeZero.createCell(1).setCellValue(0);
-            quantidadeZero.createCell(5).setCellValue("Fogazza de Calabresa");
+            Row linhaCabecalho = aba.createRow(0);
+            for (int coluna = 0; coluna < cabecalho.length; coluna++) {
+                linhaCabecalho.createCell(coluna).setCellValue(cabecalho[coluna]);
+            }
+            for (int i = 0; i < linhas.length; i++) {
+                Row linha = aba.createRow(i + 1);
+                for (int coluna = 0; coluna < linhas[i].length; coluna++) {
+                    Object valor = linhas[i][coluna];
+                    if (valor instanceof String texto) {
+                        linha.createCell(coluna).setCellValue(texto);
+                    } else if (valor instanceof Number numero) {
+                        linha.createCell(coluna).setCellValue(numero.doubleValue());
+                    }
+                }
+            }
 
             workbook.write(out);
             bytes = out.toByteArray();
         }
         return new MockMultipartFile(
                 "planilha",
-                "artificial.xlsx",
+                nomeArquivo,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 bytes);
+    }
+
+    private MockMultipartFile planilhaComLinhasInvalidas() throws IOException {
+        return arquivoPlanilha("artificial.xlsx",
+                new String[]{"Data/Hora Item", "Qtd.", "Valor Un. Item", "Valor. Tot. Item",
+                        "Tipo de Item", "Nome Prod"},
+                new Object[][]{
+                        {"01/07/2026 19:32", 2, 32.90, 65.80, "Comida", "Fogazza de Mussarela"},
+                        {"01/07/2026 19:40", "abc", 32.90, 65.80, "Comida", "Fogazza de Portuguesa"},
+                        {"01/07/2026 19:50", 5, 32.90, 65.80, "Comida", ""},
+                        {null, null, 32.90, 65.80, "Comida", null},
+                        {"01/07/2026 20:00", 0, 32.90, 65.80, "Comida", "Fogazza de Calabresa"},
+                        {"01/07/2026 20:10", -1, 32.90, 65.80, "Comida", "Fogazza de Escarola"}
+                });
     }
 
     private BigDecimal quantidadeDe(List<ItemVendido> itens, String nome) {
