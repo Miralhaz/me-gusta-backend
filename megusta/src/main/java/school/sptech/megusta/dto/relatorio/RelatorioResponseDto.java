@@ -27,7 +27,7 @@ public class RelatorioResponseDto {
 
     private List<ConsumoGeralCategoriaResponseDto> consumoPorCategoria;
 
-    private List<RupturaInsumoResponseDto> mediaConsumo;
+    private List<MediaConsumoRelatorioDto> mediaConsumo;
 
     private List<SaidaEstoqueResponse> saidas;
 
@@ -47,7 +47,7 @@ public class RelatorioResponseDto {
 
     private List<InsumoResponse> estoqueAtual;
 
-    private List<RupturaInsumoResponseDto> abaixoEstoqueMinimo;
+    private List<InsumoResponse> abaixoEstoqueMinimo;
 
     private EntradaSaidaInsumoRelatorioDto entradaSaidaInsumo;
 }
