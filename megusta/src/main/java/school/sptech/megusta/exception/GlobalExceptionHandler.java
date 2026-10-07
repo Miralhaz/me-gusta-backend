@@ -34,6 +34,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 
+    @ExceptionHandler(PlanilhaInvalidaException.class)
+    public ResponseEntity<String> handlePlanilhaInvalida(PlanilhaInvalidaException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
     @ExceptionHandler(AcessoNegadoException.class)
     public ResponseEntity<String> handleAcessoNegado(AcessoNegadoException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());

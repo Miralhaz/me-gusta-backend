@@ -7,9 +7,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import school.sptech.megusta.dto.planilha_vendas.BaixaInsumoResponse;
 import school.sptech.megusta.dto.planilha_vendas.ItemVendido;
 import school.sptech.megusta.exception.AcessoNegadoException;
 import school.sptech.megusta.exception.EstoqueInsuficienteException;
+import school.sptech.megusta.exception.PlanilhaInvalidaException;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.FogazzaInsumo;
 import school.sptech.megusta.model.Fogazzas;
@@ -26,6 +28,7 @@ import school.sptech.megusta.repository.SaidaEstoqueRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,31 +64,38 @@ public class VendasService {
     }
 
     /**
-     * Lê a planilha de vendas de forma auto-adaptativa: o extrator identifica
-     * por heurística as colunas de nome e de quantidade em cada aba (qualquer
-     * layout) e devolve os itens vendidos extraídos, agregados por nome (soma
-     * das quantidades).
+     * Lê o relatório de itens vendidos da planilha. O arquivo só é aceito quando
+     * alguma aba tem, no cabeçalho, as colunas {@code Nome Prod} e {@code Qtd.} —
+     * qualquer outro layout é rejeitado com
+     * {@link PlanilhaInvalidaException}, sem tocar no banco.
+     *
+     * @throws PlanilhaInvalidaException quando o arquivo não é o relatório de itens vendidos
      */
     public List<ItemVendido> lerPlanilha(MultipartFile planilha) throws IOException {
         try (InputStream inputStream = planilha.getInputStream();
              Workbook workbook = WorkbookFactory.create(inputStream)) {
-            return planilhaVendasExtractor.extrair(workbook);
+            List<PlanilhaVendasExtractor.ColunasReconhecidas> reconhecidas =
+                    planilhaVendasExtractor.reconhecer(workbook);
+            if (reconhecidas.isEmpty()) {
+                throw PlanilhaInvalidaException.paraArquivo(planilha.getOriginalFilename());
+            }
+            return planilhaVendasExtractor.extrair(workbook, reconhecidas);
         }
     }
 
     /**
-     * Fluxo completo de importação: extrai os itens vendidos de qualquer layout
-     * de planilha e aplica a baixa de estoque (UPDATE em {@code insumo} +
-     * INSERT em {@code saida_estoque}) em uma única transação.
+     * Fluxo completo de importação: lê o relatório de itens vendidos e aplica a
+     * baixa de estoque (UPDATE em {@code insumo} + INSERT em {@code saida_estoque})
+     * em uma única transação.
      *
-     * @return os itens extraídos da planilha, em formato JSON
+     * @return um registro por insumo cuja quantidade foi alterada, com o estoque
+     *         antes da subtração, o consumo da importação e o saldo restante;
+     *         lista vazia quando o relatório é válido mas nada é alterado
      */
     @Transactional
-    public List<ItemVendido> importarPlanilha(MultipartFile planilha) throws IOException {
+    public List<BaixaInsumoResponse> importarPlanilha(MultipartFile planilha) throws IOException {
         List<ItemVendido> itens = lerPlanilha(planilha);
-        List<ItemVendido> agregados = ItemVendido.agregarPorNome(itens);
-        baixarEstoque(agregados);
-        return agregados;
+        return baixarEstoque(itens);
     }
 
     /**
@@ -95,8 +105,11 @@ public class VendasService {
      * por insumo e, ao final, subtrai a quantidade atual, recalcula o status e grava
      * uma saída de estoque por insumo afetado. Itens sem fogazza cadastrada são
      * ignorados sem interromper a importação.
+     *
+     * @return um {@link BaixaInsumoResponse} por insumo alterado — um único registro
+     *         por insumo, mesmo quando consumido por várias fogazzas
      */
-    void baixarEstoque(List<ItemVendido> itens) {
+    List<BaixaInsumoResponse> baixarEstoque(List<ItemVendido> itens) {
         Usuario usuario = obterUsuarioAutenticado();
         Motivo motivo = obterOuCriarMotivoVenda();
 
@@ -122,6 +135,7 @@ public class VendasService {
             }
         }
 
+        List<BaixaInsumoResponse> baixas = new ArrayList<>();
         for (Map.Entry<Integer, BigDecimal> entrada : totaisPorInsumo.entrySet()) {
             Insumo insumo = insumoRepository.findById(entrada.getKey())
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Insumo não encontrado."));
@@ -133,6 +147,10 @@ public class VendasService {
                         "Estoque insuficiente do insumo '%s' (%s). Disponível: %s, necessário: %s.",
                         insumo.getNome(), insumo.getCodigoInsumo(), insumo.getQtdAtual(), consumo));
             }
+
+            // Capturada antes do setQtdAtual, que sobrescreve o valor em memória
+            BigDecimal quantidadeAtual = BigDecimal.valueOf(insumo.getQtdAtual());
+
             insumo.setQtdAtual(novaQuantidade);
             insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(novaQuantidade, insumo.getEstoqueMinimo()));
             insumoRepository.save(insumo);
@@ -143,7 +161,16 @@ public class VendasService {
             saida.setMotivo(motivo);
             saida.setQuantidade(entrada.getValue());
             saidaEstoqueRepository.save(saida);
+
+            baixas.add(new BaixaInsumoResponse(
+                    insumo.getNome(),
+                    insumo.getCodigoInsumo(),
+                    insumo.getUnidadeMedida() == null ? null : insumo.getUnidadeMedida().getUnidade(),
+                    quantidadeAtual,
+                    entrada.getValue(),
+                    BigDecimal.valueOf(novaQuantidade)));
         }
+        return baixas;
     }
 
     private Usuario obterUsuarioAutenticado() {

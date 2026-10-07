@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import school.sptech.megusta.dto.planilha_vendas.ItemVendido;
+import school.sptech.megusta.dto.planilha_vendas.BaixaInsumoResponse;
+import school.sptech.megusta.exception.PlanilhaInvalidaException;
 import school.sptech.megusta.service.VendasService;
 
 import java.math.BigDecimal;
@@ -37,7 +38,7 @@ class VendasControllerTest {
         MockMultipartFile vazio = new MockMultipartFile(
                 "planilha", "vazia.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[0]);
 
-        ResponseEntity<List<ItemVendido>> resposta = controller.importar(vazio);
+        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(vazio);
 
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, resposta.getStatusCode());
         Assertions.assertNull(resposta.getBody());
@@ -50,7 +51,7 @@ class VendasControllerTest {
         MockMultipartFile naoXlsx = new MockMultipartFile(
                 "planilha", "planilha.xls", "application/vnd.ms-excel", "conteudo".getBytes());
 
-        ResponseEntity<List<ItemVendido>> resposta = controller.importar(naoXlsx);
+        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(naoXlsx);
 
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, resposta.getStatusCode());
         Assertions.assertNull(resposta.getBody());
@@ -58,19 +59,53 @@ class VendasControllerTest {
     }
 
     @Test
-    @DisplayName("Deve retornar 200 com os itens extraídos após a importação")
-    void deveRetornar200ComItensExtraidos() throws Exception {
+    @DisplayName("Deve retornar 200 com os insumos alterados após a importação")
+    void deveRetornar200ComInsumosAlterados() throws Exception {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "planilha", "planilha.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "conteudo".getBytes());
-        List<ItemVendido> itens = List.of(new ItemVendido("Fogazza de Mussarela", BigDecimal.ONE));
+        List<BaixaInsumoResponse> baixas = List.of(new BaixaInsumoResponse(
+                "Farinha de Trigo", "FT-001", "kg",
+                new BigDecimal("100.0"), new BigDecimal("12"), new BigDecimal("88.0")));
 
-        when(vendasService.importarPlanilha(arquivo)).thenReturn(itens);
+        when(vendasService.importarPlanilha(arquivo)).thenReturn(baixas);
 
-        ResponseEntity<List<ItemVendido>> resposta = controller.importar(arquivo);
+        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(arquivo);
 
         Assertions.assertEquals(HttpStatus.OK, resposta.getStatusCode());
-        Assertions.assertEquals(itens, resposta.getBody());
+        Assertions.assertEquals(baixas, resposta.getBody());
+        verify(vendasService).importarPlanilha(arquivo);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 com lista vazia quando nada é alterado")
+    void deveRetornar200ComListaVazia() throws Exception {
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "planilha", "planilha.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "conteudo".getBytes());
+
+        when(vendasService.importarPlanilha(arquivo)).thenReturn(List.of());
+
+        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(arquivo);
+
+        Assertions.assertEquals(HttpStatus.OK, resposta.getStatusCode());
+        Assertions.assertNotNull(resposta.getBody());
+        Assertions.assertTrue(resposta.getBody().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve propagar o 400 sem corpo quando o layout não é suportado")
+    void devePropagar400QuandoLayoutNaoSuportado() throws Exception {
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "planilha", "pedidos.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "conteudo".getBytes());
+
+        when(vendasService.importarPlanilha(arquivo)).thenThrow(PlanilhaInvalidaException.paraArquivo("pedidos.xlsx"));
+
+        PlanilhaInvalidaException excecao =
+                Assertions.assertThrows(PlanilhaInvalidaException.class, () -> controller.importar(arquivo));
+
+        Assertions.assertTrue(excecao.getMessage().contains("pedidos.xlsx"));
         verify(vendasService).importarPlanilha(arquivo);
     }
 }

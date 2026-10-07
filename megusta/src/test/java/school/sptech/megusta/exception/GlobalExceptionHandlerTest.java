@@ -53,6 +53,21 @@ class GlobalExceptionHandlerTest {
         }
 
         @Test
+        @DisplayName("Deve retornar 400 para PlanilhaInvalidaException")
+        void deveRetornar400ParaPlanilhaInvalida() {
+            PlanilhaInvalidaException excecao = PlanilhaInvalidaException.paraArquivo("pedidos_recentes.xlsx");
+
+            ResponseEntity<String> resposta = handler.handlePlanilhaInvalida(excecao);
+
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST, resposta.getStatusCode());
+            // A mensagem identifica o arquivo rejeitado e o formato esperado
+            Assertions.assertTrue(resposta.getBody().contains("pedidos_recentes.xlsx"));
+            Assertions.assertTrue(resposta.getBody().contains("Nome Prod"));
+            Assertions.assertTrue(resposta.getBody().contains("Qtd."));
+            Assertions.assertTrue(resposta.getBody().contains(excecao.getMessage()));
+        }
+
+        @Test
         @DisplayName("Deve retornar 403 para AcessoNegadoException")
         void deveRetornar403ParaAcessoNegado() {
             ResponseEntity<String> resposta = handler.handleAcessoNegado(
