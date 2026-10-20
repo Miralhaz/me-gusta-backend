@@ -4,7 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import school.sptech.megusta.model.Usuario;
 
+import java.util.Optional;
+
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
+
+    Optional<Usuario> findTopByOrderByIdDesc();
 
     boolean existsByEmail(String email);
 

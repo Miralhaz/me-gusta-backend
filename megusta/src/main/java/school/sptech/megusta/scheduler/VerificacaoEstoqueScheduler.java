@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import school.sptech.megusta.model.Insumo;
+import school.sptech.megusta.model.Usuario;
 import school.sptech.megusta.notificacao.AlertaEstoque;
+import school.sptech.megusta.notificacao.AlertaEstoquePublisherPort;
 import school.sptech.megusta.notificacao.NotificacaoEstoqueService;
-import school.sptech.megusta.notificacao.WhatsAppSenderPort;
 import school.sptech.megusta.repository.InsumoRepository;
+import school.sptech.megusta.repository.UsuarioRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,12 +21,15 @@ public class VerificacaoEstoqueScheduler {
     private static final Logger log = LoggerFactory.getLogger(VerificacaoEstoqueScheduler.class);
 
     private final InsumoRepository insumoRepository;
+    private final UsuarioRepository usuarioRepository;
     private final NotificacaoEstoqueService notificacaoEstoqueService;
 
     public VerificacaoEstoqueScheduler(InsumoRepository insumoRepository,
-                                       WhatsAppSenderPort whatsappSender) {
+                                       UsuarioRepository usuarioRepository,
+                                       AlertaEstoquePublisherPort alertaEstoquePublisher) {
         this.insumoRepository = insumoRepository;
-        this.notificacaoEstoqueService = new NotificacaoEstoqueService(whatsappSender);
+        this.usuarioRepository = usuarioRepository;
+        this.notificacaoEstoqueService = new NotificacaoEstoqueService(alertaEstoquePublisher);
     }
 
     @Scheduled(cron = "0 0 7 * * *")
@@ -36,12 +41,17 @@ public class VerificacaoEstoqueScheduler {
                 .map(i -> new AlertaEstoque(i.getNome(), i.getCodigoInsumo(), i.getQtdAtual(), i.getEstoqueMinimo()))
                 .toList();
 
-        int notificados = notificacaoEstoqueService.notificarAbaixoMinimo(alertas);
+        List<String> telefones = usuarioRepository.findTopByOrderByIdDesc()
+                .map(Usuario::getTelefone)
+                .map(List::of)
+                .orElseGet(List::of);
 
-        if (notificados > 0) {
-            log.warn("{} insumo(s) abaixo do estoque mínimo — notificação(ões) despachada(s).", notificados);
+        int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(telefones, alertas);
+
+        if (publicadas > 0) {
+            log.warn("{} mensagen(s) de alerta de estoque publicada(s).", publicadas);
         } else {
-            log.info("Todos os insumos estão com estoque adequado.");
+            log.info("Nenhum alerta de estoque publicado.");
         }
 
         log.info("Verificação de estoque concluída.");

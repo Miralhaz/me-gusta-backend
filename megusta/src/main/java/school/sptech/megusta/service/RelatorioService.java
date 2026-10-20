@@ -7,7 +7,7 @@ import school.sptech.megusta.dto.consumo_intermediario_categoria.ConsumoIntermed
 import school.sptech.megusta.dto.entrada_estoque.EntradaEstoqueResponse;
 import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.dto.relatorio.*;
-import school.sptech.megusta.dto.*;
+//import school.sptech.megusta.dto.*; essa linha impede que a aplicação suba no intellij não sei porque
 import school.sptech.megusta.dto.saida_estoque.SaidaEstoqueResponse;
 
 import school.sptech.megusta.mapper.EntradaEstoqueMapper;
