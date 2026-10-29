@@ -41,12 +41,12 @@ public class VerificacaoEstoqueScheduler {
                 .map(i -> new AlertaEstoque(i.getNome(), i.getCodigoInsumo(), i.getQtdAtual(), i.getEstoqueMinimo()))
                 .toList();
 
-        List<String> telefones = usuarioRepository.findTopByOrderByIdDesc()
-                .map(Usuario::getTelefone)
-                .map(List::of)
+        List<String> emails = usuarioRepository.findTopByOrderByIdDesc()
+                .map(Usuario::getEmail)
+                .map(java.util.Collections::singletonList)
                 .orElseGet(List::of);
 
-        int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(telefones, alertas);
+        int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(emails, alertas);
 
         if (publicadas > 0) {
             log.warn("{} mensagen(s) de alerta de estoque publicada(s).", publicadas);

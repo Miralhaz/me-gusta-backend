@@ -23,6 +23,7 @@ class RabbitAlertaEstoquePublisherTest {
 
     private static final String EXCHANGE = "megusta.estoque";
     private static final String ROUTING_KEY = "alerta.estoque";
+    private static final String EMAIL = "responsavel@megusta.com";
 
     @Mock
     private RabbitTemplate rabbitTemplate;
@@ -40,13 +41,13 @@ class RabbitAlertaEstoquePublisherTest {
     void devePublicarNoExchangeERoutingKeyConfigurados() {
         AlertaEstoque alerta = alerta("Farinha de trigo", "INS-001", 2.0, 10.0);
 
-        publisher().publicar("+5511999999999", List.of(alerta));
+        publisher().publicar(EMAIL, List.of(alerta));
 
         ArgumentCaptor<AlertaEstoqueMensagem> captor = ArgumentCaptor.forClass(AlertaEstoqueMensagem.class);
         Mockito.verify(rabbitTemplate).convertAndSend(Mockito.eq(EXCHANGE), Mockito.eq(ROUTING_KEY), captor.capture());
 
         AlertaEstoqueMensagem mensagem = captor.getValue();
-        Assertions.assertEquals("+5511999999999", mensagem.telefone());
+        Assertions.assertEquals(EMAIL, mensagem.email());
         Assertions.assertEquals(List.of(alerta), mensagem.alertas());
     }
 
@@ -57,7 +58,7 @@ class RabbitAlertaEstoquePublisherTest {
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
 
         AlertaEstoqueMensagem mensagem = new AlertaEstoqueMensagem(
-                "+5511999999999",
+                EMAIL,
                 List.of(alerta("Farinha de trigo", "INS-001", 2.0, 10.0))
         );
 
@@ -65,7 +66,8 @@ class RabbitAlertaEstoquePublisherTest {
 
         JsonNode raiz = objectMapper.readTree(message.getBody());
 
-        Assertions.assertEquals("+5511999999999", raiz.get("telefone").asText());
+        Assertions.assertEquals(EMAIL, raiz.get("email").asText());
+        Assertions.assertFalse(raiz.has("telefone"));
 
         JsonNode item = raiz.get("alertas").get(0);
         Assertions.assertEquals("Farinha de trigo", item.get("nome").asText());

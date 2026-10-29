@@ -18,10 +18,10 @@ class AlertaEstoqueMensagemTest {
     }
 
     @Test
-    @DisplayName("deve expor telefone no nível raiz e alertas com os campos do contrato")
-    void deveExporTelefoneNoNivelRaizEAlertasComCamposDoContrato() throws Exception {
+    @DisplayName("deve expor email no nível raiz e alertas com os campos do contrato")
+    void deveExporEmailNoNivelRaizEAlertasComCamposDoContrato() throws Exception {
         AlertaEstoqueMensagem mensagem = new AlertaEstoqueMensagem(
-                "+5511999999999",
+                "responsavel@megusta.com",
                 List.of(alerta("Farinha de trigo", "INS-001", 2.0, 10.0))
         );
 
@@ -29,7 +29,8 @@ class AlertaEstoqueMensagemTest {
 
         JsonNode raiz = objectMapper.readTree(json);
 
-        Assertions.assertEquals("+5511999999999", raiz.get("telefone").asText());
+        Assertions.assertEquals("responsavel@megusta.com", raiz.get("email").asText());
+        Assertions.assertFalse(raiz.has("telefone"));
 
         JsonNode alertas = raiz.get("alertas");
         Assertions.assertNotNull(alertas);
@@ -47,7 +48,7 @@ class AlertaEstoqueMensagemTest {
     @DisplayName("deve conter todos os alertas recebidos na lista")
     void deveConterTodosOsAlertasRecebidos() throws Exception {
         AlertaEstoqueMensagem mensagem = new AlertaEstoqueMensagem(
-                "+5511888888888",
+                "outro@megusta.com",
                 List.of(
                         alerta("Farinha de trigo", "INS-001", 2.0, 10.0),
                         alerta("Queijo mussarela", "INS-002", 1.5, 4.0)
@@ -62,16 +63,16 @@ class AlertaEstoqueMensagemTest {
     }
 
     @Test
-    @DisplayName("não deve conter texto de mensagem formatada para WhatsApp")
-    void naoDeveConterTextoFormatadoDeWhatsApp() throws Exception {
+    @DisplayName("não deve conter texto de mensagem formatada nem telefone")
+    void naoDeveConterTextoFormatadoNemTelefone() throws Exception {
         AlertaEstoqueMensagem mensagem = new AlertaEstoqueMensagem(
-                "+5511999999999",
+                "responsavel@megusta.com",
                 List.of(alerta("Farinha de trigo", "INS-001", 2.0, 10.0))
         );
 
         String json = objectMapper.writeValueAsString(mensagem);
 
         Assertions.assertFalse(json.contains("Estoque baixo"));
-        Assertions.assertFalse(json.toUpperCase().contains("WHATSAPP"));
+        Assertions.assertFalse(json.contains("telefone"));
     }
 }
