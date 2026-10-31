@@ -46,8 +46,8 @@ class VerificacaoEstoqueSchedulerTest {
         return insumo;
     }
 
-    private Usuario usuario(String telefone) {
-        return new Usuario(null, "Usuário", "usuario@email.com", "senha", telefone);
+    private Usuario usuario(String email) {
+        return new Usuario(null, "Usuário", email, "senha", "+5511999999999");
     }
 
     @Nested
@@ -65,17 +65,17 @@ class VerificacaoEstoqueSchedulerTest {
                     insumo("Orégano", "INS-004", 8.0, 8.0, true)
             ));
             Mockito.when(usuarioRepository.findTopByOrderByIdDesc())
-                    .thenReturn(Optional.of(usuario("+5511888888888")));
+                    .thenReturn(Optional.of(usuario("responsavel@megusta.com")));
 
             Assertions.assertDoesNotThrow(scheduler()::verificarEstoqueMinimo);
 
-            ArgumentCaptor<String> telefoneCaptor = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
             ArgumentCaptor<List<AlertaEstoque>> alertasCaptor = ArgumentCaptor.forClass(List.class);
 
             Mockito.verify(alertaEstoquePublisher, Mockito.times(1))
-                    .publicar(telefoneCaptor.capture(), alertasCaptor.capture());
+                    .publicar(emailCaptor.capture(), alertasCaptor.capture());
 
-            Assertions.assertEquals(List.of("+5511888888888"), telefoneCaptor.getAllValues());
+            Assertions.assertEquals(List.of("responsavel@megusta.com"), emailCaptor.getAllValues());
             Assertions.assertEquals(
                     List.of(new AlertaEstoque("Farinha de trigo", "INS-001", 2.0, 10.0)),
                     alertasCaptor.getValue()
@@ -90,7 +90,7 @@ class VerificacaoEstoqueSchedulerTest {
                     insumo("Orégano", "INS-004", 9.0, 8.0, true)
             ));
             Mockito.when(usuarioRepository.findTopByOrderByIdDesc())
-                    .thenReturn(Optional.of(usuario("+5511999999999")));
+                    .thenReturn(Optional.of(usuario("responsavel@megusta.com")));
 
             Assertions.assertDoesNotThrow(scheduler()::verificarEstoqueMinimo);
 
@@ -111,13 +111,31 @@ class VerificacaoEstoqueSchedulerTest {
         }
 
         @Test
+        @DisplayName("não deve publicar quando o e-mail do último usuário é nulo ou em branco")
+        void naoDevePublicarQuandoEmailNuloOuEmBranco() {
+            Mockito.when(insumoRepository.findAll()).thenReturn(List.of(
+                    insumo("Farinha de trigo", "INS-001", 2.0, 10.0, true)
+            ));
+
+            Mockito.when(usuarioRepository.findTopByOrderByIdDesc())
+                    .thenReturn(Optional.of(usuario(null)));
+            Assertions.assertDoesNotThrow(scheduler()::verificarEstoqueMinimo);
+            Mockito.verifyNoInteractions(alertaEstoquePublisher);
+
+            Mockito.when(usuarioRepository.findTopByOrderByIdDesc())
+                    .thenReturn(Optional.of(usuario("  ")));
+            Assertions.assertDoesNotThrow(scheduler()::verificarEstoqueMinimo);
+            Mockito.verifyNoInteractions(alertaEstoquePublisher);
+        }
+
+        @Test
         @DisplayName("não deve propagar erro quando a publicação falha")
         void naoDevePropagarErroQuandoPublicacaoFalha() {
             Mockito.when(insumoRepository.findAll()).thenReturn(List.of(
                     insumo("Farinha de trigo", "INS-001", 2.0, 10.0, true)
             ));
             Mockito.when(usuarioRepository.findTopByOrderByIdDesc())
-                    .thenReturn(Optional.of(usuario("+5511999999999")));
+                    .thenReturn(Optional.of(usuario("responsavel@megusta.com")));
             Mockito.doThrow(new RuntimeException("falha simulada de publicação"))
                     .when(alertaEstoquePublisher)
                     .publicar(Mockito.anyString(), Mockito.anyList());

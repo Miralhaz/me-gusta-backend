@@ -13,8 +13,8 @@ public interface AlertaEstoquePublisherPort {
     /**
      * Publica, para um único destinatário, a lista de insumos abaixo do estoque mínimo.
      *
-     * @param telefone telefone do destinatário (nível raiz da mensagem)
-     * @param alertas  insumos abaixo do estoque mínimo
+     * @param email   e-mail do destinatário (nível raiz da mensagem)
+     * @param alertas insumos abaixo do estoque mínimo
      */
-    void publicar(String telefone, List<AlertaEstoque> alertas);
+    void publicar(String email, List<AlertaEstoque> alertas);
 }

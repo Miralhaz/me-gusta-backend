@@ -43,19 +43,19 @@ class NotificacaoEstoqueServiceTest {
                     alerta("Farinha de trigo", "INS-001", 2.0, 10.0),
                     alerta("Queijo mussarela", "INS-002", 1.5, 4.0)
             );
-            List<String> telefones = List.of("+5511999999999", "+5511888888888");
+            List<String> emails = List.of("responsavel@megusta.com", "outro@megusta.com");
 
-            int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(telefones, alertas);
+            int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(emails, alertas);
 
             Assertions.assertEquals(2, publicadas);
 
-            ArgumentCaptor<String> telefoneCaptor = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
             ArgumentCaptor<List<AlertaEstoque>> alertasCaptor = ArgumentCaptor.forClass(List.class);
 
             Mockito.verify(alertaEstoquePublisher, Mockito.times(2))
-                    .publicar(telefoneCaptor.capture(), alertasCaptor.capture());
+                    .publicar(emailCaptor.capture(), alertasCaptor.capture());
 
-            Assertions.assertEquals(telefones, telefoneCaptor.getAllValues());
+            Assertions.assertEquals(emails, emailCaptor.getAllValues());
             for (List<AlertaEstoque> listaPublicada : alertasCaptor.getAllValues()) {
                 Assertions.assertEquals(alertas, listaPublicada);
             }
@@ -72,7 +72,7 @@ class NotificacaoEstoqueServiceTest {
                     alerta("Queijo mussarela", "INS-002", 1.5, 4.0)
             );
 
-            notificacaoEstoqueService.notificarAbaixoMinimo(List.of("+5511999999999"), alertas);
+            notificacaoEstoqueService.notificarAbaixoMinimo(List.of("responsavel@megusta.com"), alertas);
 
             ArgumentCaptor<List<AlertaEstoque>> alertasCaptor = ArgumentCaptor.forClass(List.class);
             Mockito.verify(alertaEstoquePublisher).publicar(Mockito.anyString(), alertasCaptor.capture());
@@ -99,7 +99,7 @@ class NotificacaoEstoqueServiceTest {
                     alerta("Orégano", "INS-004", 8.0, 8.0)
             );
 
-            int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(List.of("+5511999999999"), alertas);
+            int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(List.of("responsavel@megusta.com"), alertas);
 
             Assertions.assertEquals(0, publicadas);
             Mockito.verifyNoInteractions(alertaEstoquePublisher);
@@ -108,15 +108,15 @@ class NotificacaoEstoqueServiceTest {
         @Test
         @DisplayName("não deve publicar quando a lista de alertas está vazia")
         void naoDevePublicarQuandoListaDeAlertasVazia() {
-            int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(List.of("+5511999999999"), List.of());
+            int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(List.of("responsavel@megusta.com"), List.of());
 
             Assertions.assertEquals(0, publicadas);
             Mockito.verifyNoInteractions(alertaEstoquePublisher);
         }
 
         @Test
-        @DisplayName("não deve publicar quando não há usuários/telefones cadastrados")
-        void naoDevePublicarQuandoNaoHaTelefones() {
+        @DisplayName("não deve publicar quando não há usuários/e-mails cadastrados")
+        void naoDevePublicarQuandoNaoHaEmails() {
             List<AlertaEstoque> alertas = List.of(alerta("Farinha de trigo", "INS-001", 2.0, 10.0));
 
             int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(List.of(), alertas);
@@ -126,18 +126,18 @@ class NotificacaoEstoqueServiceTest {
         }
 
         @Test
-        @DisplayName("deve ignorar telefone nulo ou em branco")
-        void deveIgnorarTelefoneNuloOuEmBranco() {
+        @DisplayName("deve ignorar e-mail nulo ou em branco")
+        void deveIgnorarEmailNuloOuEmBranco() {
             List<AlertaEstoque> alertas = List.of(alerta("Farinha de trigo", "INS-001", 2.0, 10.0));
 
             int publicadas = notificacaoEstoqueService.notificarAbaixoMinimo(
-                    java.util.Arrays.asList(null, "  ", "+5511999999999"),
+                    java.util.Arrays.asList(null, "  ", "responsavel@megusta.com"),
                     alertas
             );
 
             Assertions.assertEquals(1, publicadas);
             Mockito.verify(alertaEstoquePublisher, Mockito.times(1))
-                    .publicar(Mockito.eq("+5511999999999"), Mockito.anyList());
+                    .publicar(Mockito.eq("responsavel@megusta.com"), Mockito.anyList());
         }
     }
 
@@ -149,14 +149,14 @@ class NotificacaoEstoqueServiceTest {
         @DisplayName("falha em um destinatário não interrompe os demais nem propaga erro")
         void falhaEmUmDestinatarioNaoInterrompeOsDemais() {
             List<AlertaEstoque> alertas = List.of(alerta("Farinha de trigo", "INS-001", 2.0, 10.0));
-            List<String> telefones = List.of("+5511999999999", "+5511888888888", "+5511777777777");
+            List<String> emails = List.of("responsavel@megusta.com", "outro@megusta.com", "terceiro@megusta.com");
 
             Mockito.doThrow(new RuntimeException("falha simulada de publicação"))
                     .when(alertaEstoquePublisher)
-                    .publicar(Mockito.eq("+5511999999999"), Mockito.anyList());
+                    .publicar(Mockito.eq("responsavel@megusta.com"), Mockito.anyList());
 
             int publicadas = Assertions.assertDoesNotThrow(() ->
-                    notificacaoEstoqueService.notificarAbaixoMinimo(telefones, alertas));
+                    notificacaoEstoqueService.notificarAbaixoMinimo(emails, alertas));
 
             Assertions.assertEquals(2, publicadas);
             Mockito.verify(alertaEstoquePublisher, Mockito.times(3))

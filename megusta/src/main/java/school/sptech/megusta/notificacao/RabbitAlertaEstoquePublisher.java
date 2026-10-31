@@ -34,12 +34,12 @@ public class RabbitAlertaEstoquePublisher implements AlertaEstoquePublisherPort 
     }
 
     @Override
-    public void publicar(String telefone, List<AlertaEstoque> alertas) {
-        AlertaEstoqueMensagem mensagem = new AlertaEstoqueMensagem(telefone, alertas);
+    public void publicar(String email, List<AlertaEstoque> alertas) {
+        AlertaEstoqueMensagem mensagem = new AlertaEstoqueMensagem(email, alertas);
 
         rabbitTemplate.convertAndSend(exchange, routingKey, mensagem);
 
-        log.info("Alerta de estoque publicado no exchange '{}' (routing key '{}') para o telefone {}.",
-                exchange, routingKey, telefone);
+        log.info("Alerta de estoque publicado no exchange '{}' (routing key '{}') para o e-mail {}.",
+                exchange, routingKey, email);
     }
 }
