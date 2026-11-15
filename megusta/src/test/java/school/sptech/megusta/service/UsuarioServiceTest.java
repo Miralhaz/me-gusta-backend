@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+import school.sptech.megusta.dto.usuario.AlteracaoSenhaRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioUpdateDto;
 import school.sptech.megusta.exception.AcessoNegadoException;
@@ -276,6 +277,56 @@ class UsuarioServiceTest {
                     RecursoConflitoException.class,
                     () -> usuarioService.atualizar(dto, id, idAutenticado)
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("Método alterarSenha")
+    class alterarSenha {
+
+        @Test
+        @DisplayName("Deve alterar a senha com hash e retornar mensagem de sucesso")
+        void deveAlterarSenhaComSucesso() {
+
+            Usuario existente = new Usuario(1, "Bianca", "bi@teste.com", "hashAntigo");
+
+            AlteracaoSenhaRequestDto dto = new AlteracaoSenhaRequestDto(
+                    "bi@teste.com", "NovaSenha@123");
+
+            Mockito.when(repository.findFirstByEmail("bi@teste.com"))
+                    .thenReturn(Optional.of(existente));
+
+            Mockito.when(passwordEncoder.encode("NovaSenha@123"))
+                    .thenReturn("novoHash");
+
+            Mockito.when(repository.save(Mockito.any(Usuario.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            var resposta = usuarioService.alterarSenha(dto);
+
+            Assertions.assertNotNull(resposta);
+            Assertions.assertEquals("Senha alterada com sucesso", resposta.getMensagem());
+            Assertions.assertEquals("novoHash", existente.getSenha());
+            Assertions.assertNotEquals("NovaSenha@123", existente.getSenha());
+            Mockito.verify(repository).save(existente);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exception e não persistir quando o e-mail não existir")
+        void deveLancarExceptionQuandoEmailNaoExistir() {
+
+            AlteracaoSenhaRequestDto dto = new AlteracaoSenhaRequestDto(
+                    "nao-existe@teste.com", "NovaSenha@123");
+
+            Mockito.when(repository.findFirstByEmail("nao-existe@teste.com"))
+                    .thenReturn(Optional.empty());
+
+            Assertions.assertThrows(
+                    RecursoNaoEncontradoException.class,
+                    () -> usuarioService.alterarSenha(dto)
+            );
+
+            Mockito.verify(repository, Mockito.never()).save(Mockito.any(Usuario.class));
         }
     }
 

@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import school.sptech.megusta.dto.usuario.AlteracaoSenhaRequestDto;
+import school.sptech.megusta.dto.usuario.AlteracaoSenhaResponseDto;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
 import school.sptech.megusta.dto.usuario.UsuarioUpdateDto;
@@ -102,6 +104,23 @@ public class UsuarioController {
     ){
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
         return ResponseEntity.ok(service.atualizar(dto, id, usuarioLogado.getId()));
+    }
+
+    @Operation(summary = "Alterar senha do usuário",
+            description = "Redefine a senha de uma conta existente a partir do e-mail. Rota pública: não exige "
+                    + "JWT. O corpo deve conter `email` e `novaSenha`, e a nova senha segue a mesma política "
+                    + "forte do cadastro. Retorna `200` com uma mensagem de confirmação.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AlteracaoSenhaResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content)
+    })
+    @PutMapping("/senha")
+    public ResponseEntity<AlteracaoSenhaResponseDto> alterarSenha(
+            @Valid @RequestBody AlteracaoSenhaRequestDto dto
+    ){
+        return ResponseEntity.ok(service.alterarSenha(dto));
     }
 
     @Operation(summary = "Excluir usuário")

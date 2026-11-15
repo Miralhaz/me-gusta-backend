@@ -19,4 +19,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByNomeAndIdNot(String nome, Integer id);
 
     UserDetails findByEmail(String login);
+
+    Optional<Usuario> findFirstByEmail(String email);
 }

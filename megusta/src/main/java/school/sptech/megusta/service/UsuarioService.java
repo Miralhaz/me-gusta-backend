@@ -3,6 +3,8 @@ package school.sptech.megusta.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import school.sptech.megusta.dto.usuario.AlteracaoSenhaRequestDto;
+import school.sptech.megusta.dto.usuario.AlteracaoSenhaResponseDto;
 import school.sptech.megusta.dto.usuario.UsuarioRequestDto;
 import school.sptech.megusta.dto.usuario.UsuarioResponseDto;
 import school.sptech.megusta.dto.usuario.UsuarioUpdateDto;
@@ -86,6 +88,16 @@ public class UsuarioService {
             throw new RecursoNaoEncontradoException("Usuário não encontrado");
         }
         repository.deleteById(id);
+    }
+
+    public AlteracaoSenhaResponseDto alterarSenha(AlteracaoSenhaRequestDto dto){
+        Usuario usuario = repository.findFirstByEmail(dto.getEmail())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
+
+        usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
+        repository.save(usuario);
+
+        return new AlteracaoSenhaResponseDto("Senha alterada com sucesso");
     }
 
 }
