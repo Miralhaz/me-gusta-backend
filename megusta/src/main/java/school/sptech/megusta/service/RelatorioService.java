@@ -21,6 +21,7 @@ import school.sptech.megusta.repository.EntradaEstoqueRepository;
 import school.sptech.megusta.repository.InsumoRepository;
 import school.sptech.megusta.repository.SaidaEstoqueRepository;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
+import java.io.ByteArrayOutputStream;
 
 @Service
 public class RelatorioService {
@@ -787,80 +792,36 @@ public class RelatorioService {
         return valor.stripTrailingZeros().toPlainString();
     }
 
-    // GERADOR PDF
-    private byte[] gerarPdfBytes(String titulo, String corpo) {
+    private byte[] gerarPdfBytes(String titulo, String corpo){
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document documento = new Document(PageSize.A4);
+            PdfWriter writer = PdfWriter.getInstance(documento, baos);
 
-        String[] linhas = corpo.split("\\n");
+            documento.open();
 
-        StringBuilder stream = new StringBuilder();
+            // Definição de fontes para o PDF
+            Font fontTitulo = new Font(Font.HELVETICA, 20, Font.BOLD);
+            Font fontCorpo = new Font(Font.HELVETICA, 12, Font.NORMAL);
 
-        stream.append("BT\n");
-        stream.append("/F1 20 Tf\n");
-        stream.append("72 790 Td\n");
-        stream.append("(").append(escapePdfText(titulo)).append(") Tj\n");
-        stream.append("0 -30 Td\n");
-        stream.append("/F1 12 Tf\n");
+            // Título do PDF
+            Paragraph tituloDoDocumento = new Paragraph(titulo, fontTitulo);
+            tituloDoDocumento.setAlignment(Element.ALIGN_LEFT);
+            documento.add(tituloDoDocumento);
 
-        for (String linha : linhas) {
-            stream.append("(").append(escapePdfText(linha)).append(") Tj\n");stream.append("0 -18 Td\n");
+            documento.add(new Paragraph("\n"));
+
+            // Adição do corpo do PDF
+            String[] linhas = corpo.split("\\n");
+            for (String linha : linhas){
+                Paragraph linhaDoDcumento = new Paragraph(linha, fontCorpo);
+                linhaDoDcumento.setSpacingAfter(2f);
+                documento.add(linhaDoDcumento);
+            }
+
+            documento.close();
+            return baos.toByteArray();
+        } catch (DocumentException | IOException e){
+            throw new RuntimeException("Erro na geração e escrita do PDF: " + e.getMessage());
         }
-
-        stream.append("ET");
-
-        String streamText = stream.toString();
-
-        byte[] streamBytes = streamText.getBytes(StandardCharsets.ISO_8859_1);
-
-        List<String> objects = new ArrayList<>();
-
-        objects.add("<< /Type /Catalog /Pages 2 0 R >>");
-        objects.add("<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
-        objects.add("<< /Type /Page /Parent 2 0 R " + "/MediaBox [0 0 595 842] " + "/Contents 4 0 R " + "/Resources << /Font << /F1 5 0 R >> >> >>");
-        objects.add("<< /Length " + streamBytes.length + " >>\nstream\n" + streamText + "\nendstream");
-        objects.add("<< /Type /Font /Subtype /Type1 " + "/BaseFont /Helvetica >>");
-
-        StringBuilder pdf = new StringBuilder();
-
-        pdf.append("%PDF-1.4\n");
-
-        List<Integer> offsets = new ArrayList<>();
-
-        for (int i = 0; i < objects.size(); i++) {
-
-            offsets.add(pdf.length());
-            pdf.append(i + 1).append(" 0 obj\n");
-            pdf.append(objects.get(i)).append("\nendobj\n");
-        }
-
-        int xrefStart = pdf.length();
-
-        pdf.append("xref\n");
-        pdf.append("0 ").append(objects.size() + 1).append("\n");
-        pdf.append("0000000000 65535 f \n");
-
-        for (Integer offset : offsets) {
-            pdf.append(String.format("%010d 00000 n \n", offset));
-        }
-
-        pdf.append("trailer\n");
-        pdf.append("<< /Size ").append(objects.size() + 1).append(" /Root 1 0 R >>\n");
-        pdf.append("startxref\n");
-        pdf.append(xrefStart).append("\n");
-        pdf.append("%%EOF");
-
-        return pdf.toString().getBytes(StandardCharsets.ISO_8859_1);
-    }
-
-    private String escapePdfText(String value) {
-
-        if (value == null) {
-            return "";
-        }
-
-        return value
-                .replace("\\", "\\\\")
-                .replace("(", "\\(")
-                .replace(")", "\\)")
-                .replace("\n", "\\n");
     }
 }
