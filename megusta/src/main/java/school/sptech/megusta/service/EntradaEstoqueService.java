@@ -1,14 +1,19 @@
 package school.sptech.megusta.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import school.sptech.megusta.config.CacheNames;
+import school.sptech.megusta.dto.entrada_estoque.EntradaEstoqueResponse;
+import school.sptech.megusta.mapper.EntradaEstoqueMapper;
 import school.sptech.megusta.exception.RecursoNaoEncontradoException;
 import school.sptech.megusta.model.*;
 import school.sptech.megusta.repository.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Double.parseDouble;
@@ -23,6 +28,7 @@ public class EntradaEstoqueService {
     private final TipoStatusRepository tipoStatusRepository;
     private final UnidadeMedidaRepository unidadeMedidaRepository;
     private final TipoStatusService tipoStatusService;
+    private final StockListCacheInvalidator cacheInvalidator;
 
     public EntradaEstoqueService(
             EntradaEstoqueRepository entradaEstoqueRepository,
@@ -31,7 +37,8 @@ public class EntradaEstoqueService {
             FornecedorRepository fornecedorRepository,
             TipoStatusRepository tipoStatusRepository,
             UnidadeMedidaRepository unidadeMedidaRepository,
-            TipoStatusService tipoStatusService) {
+            TipoStatusService tipoStatusService,
+            StockListCacheInvalidator cacheInvalidator) {
         this.entradaEstoqueRepository = entradaEstoqueRepository;
         this.insumoRepository = insumoRepository;
         this.usuarioRepository = usuarioRepository;
@@ -39,10 +46,17 @@ public class EntradaEstoqueService {
         this.tipoStatusRepository = tipoStatusRepository;
         this.unidadeMedidaRepository = unidadeMedidaRepository;
         this.tipoStatusService = tipoStatusService;
+        this.cacheInvalidator = cacheInvalidator;
     }
 
     public List<EntradaEstoque> listar() {
         return entradaEstoqueRepository.findAll();
+    }
+
+    @Cacheable(cacheNames = CacheNames.ENTRADAS_ESTOQUE_LISTA, key = "'todos'")
+    public List<EntradaEstoqueResponse> listarEntradasParaAlertas() {
+        List<EntradaEstoque> entradas = entradaEstoqueRepository.findAll();
+        return new ArrayList<>(EntradaEstoqueMapper.toResponse(entradas));
     }
 
     public Page<EntradaEstoque> listarPaginado(String busca, String status, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
@@ -113,7 +127,9 @@ public class EntradaEstoqueService {
         insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
         insumoRepository.save(insumo);
 
-        return entradaEstoqueRepository.save(entradaEstoque);
+        EntradaEstoque salva = entradaEstoqueRepository.save(entradaEstoque);
+        cacheInvalidator.evictBothLists();
+        return salva;
     }
 
     public EntradaEstoque atualizar(EntradaEstoque entradaEstoque, Integer id) {
@@ -147,13 +163,16 @@ public class EntradaEstoqueService {
         entradaExistente.setDtPedido(entradaEstoque.getDtPedido());
         entradaExistente.setVlTotal(entradaEstoque.getVlTotal());
 
-        return entradaEstoqueRepository.save(entradaExistente);
+        EntradaEstoque salva = entradaEstoqueRepository.save(entradaExistente);
+        cacheInvalidator.evictBothLists();
+        return salva;
     }
 
     public void deletar(Integer id) {
         EntradaEstoque entradaEstoque = entradaEstoqueRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Entrada de estoque não encontrada."));
         entradaEstoqueRepository.delete(entradaEstoque);
+        cacheInvalidator.evictBothLists();
     }
 
     public List<EntradaEstoque> buscarPorInsumo(Integer insumoId) {

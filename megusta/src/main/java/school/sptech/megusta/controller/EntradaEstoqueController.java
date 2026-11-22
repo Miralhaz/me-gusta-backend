@@ -34,7 +34,8 @@ public class EntradaEstoqueController {
         this.entradaEstoqueService = entradaEstoqueService;
     }
 
-    @Operation(summary = "Listar todas as entradas de estoque (sem paginação - compatibilidade)")
+    @Operation(summary = "Listar todas as entradas de estoque (sem paginação - compatibilidade)",
+            description = "Retorna a lista completa de entradas de estoque.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = EntradaEstoqueResponse.class))),
@@ -43,11 +44,11 @@ public class EntradaEstoqueController {
     })
     @GetMapping
     public ResponseEntity<List<EntradaEstoqueResponse>> listar() {
-        List<EntradaEstoque> entradas = entradaEstoqueService.listar();
+        List<EntradaEstoqueResponse> entradas = entradaEstoqueService.listarEntradasParaAlertas();
         if (entradas.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(EntradaEstoqueMapper.toResponse(entradas));
+        return ResponseEntity.ok(entradas);
     }
 
     @Operation(summary = "Listar entradas de estoque com paginação e filtros")

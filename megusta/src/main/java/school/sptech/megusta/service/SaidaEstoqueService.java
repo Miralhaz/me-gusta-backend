@@ -22,16 +22,19 @@ public class SaidaEstoqueService {
     private final UsuarioRepository usuarioRepo;
     private final MotivoRepository motivoRepo;
     private final TipoStatusService tipoStatusService;
+    private final StockListCacheInvalidator cacheInvalidator;
 
     public SaidaEstoqueService(SaidaEstoqueRepository saidaRepo,
                                InsumoRepository insumoRepo,
                                UsuarioRepository usuarioRepo, MotivoRepository motivoRepo,
-                               TipoStatusService tipoStatusService) {
+                               TipoStatusService tipoStatusService,
+                               StockListCacheInvalidator cacheInvalidator) {
         this.saidaRepo = saidaRepo;
         this.insumoRepo = insumoRepo;
         this.usuarioRepo = usuarioRepo;
         this.motivoRepo = motivoRepo;
         this.tipoStatusService = tipoStatusService;
+        this.cacheInvalidator = cacheInvalidator;
     }
 
     public List<SaidaEstoque> listar() {
@@ -64,7 +67,9 @@ public class SaidaEstoqueService {
          insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
          insumoRepo.save(insumo);
 
-         return saidaRepo.save(novaSaida);
+         SaidaEstoque salva = saidaRepo.save(novaSaida);
+         cacheInvalidator.evictInsumosLista();
+         return salva;
      }
 
     public SaidaEstoque atualizar(SaidaEstoque saidaAtualizada, Integer id) {
@@ -95,13 +100,16 @@ public class SaidaEstoqueService {
              existente.setDtSaida(saidaAtualizada.getDtSaida());
          }
 
-         return saidaRepo.save(existente);
+         SaidaEstoque salva = saidaRepo.save(existente);
+         cacheInvalidator.evictInsumosLista();
+         return salva;
      }
 
     public void deletar(Integer id) {
         SaidaEstoque existente = saidaRepo.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Saída de estoque não encontrada."));
         saidaRepo.delete(existente);
+        cacheInvalidator.evictInsumosLista();
     }
 
     public List<SaidaEstoque> buscarPorInsumo(Integer insumoId) {

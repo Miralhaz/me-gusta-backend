@@ -47,6 +47,9 @@ class EntradaEstoqueServiceTest {
     @Mock
     private TipoStatusService tipoStatusService;
 
+    @Mock
+    private StockListCacheInvalidator cacheInvalidator;
+
     @InjectMocks
     private EntradaEstoqueService entradaEstoqueService;
 
@@ -134,6 +137,7 @@ class EntradaEstoqueServiceTest {
             Mockito.when(entradaEstoqueRepository.save(entrada)).thenReturn(entrada);
 
             Assertions.assertEquals(entrada, entradaEstoqueService.cadastrar(entrada));
+            Mockito.verify(cacheInvalidator).evictBothLists();
         }
 
         @Test
@@ -146,6 +150,7 @@ class EntradaEstoqueServiceTest {
             Mockito.when(insumoRepository.findById(insumo.getId())).thenReturn(Optional.empty());
 
             Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> entradaEstoqueService.cadastrar(entrada));
+            Mockito.verify(cacheInvalidator, Mockito.never()).evictBothLists();
         }
 
         @Test
@@ -273,6 +278,7 @@ class EntradaEstoqueServiceTest {
             Assertions.assertEquals(existente.getId(), atualizada.getId());
             Assertions.assertEquals(entrada.getQuantidadeAbsoluta(), atualizada.getQuantidadeAbsoluta());
             Assertions.assertEquals(entrada.getLote(), atualizada.getLote());
+            Mockito.verify(cacheInvalidator).evictBothLists();
         }
 
         @Test
@@ -409,6 +415,7 @@ class EntradaEstoqueServiceTest {
             entradaEstoqueService.deletar(entrada.getId());
 
             Mockito.verify(entradaEstoqueRepository).delete(entrada);
+            Mockito.verify(cacheInvalidator).evictBothLists();
         }
 
         @Test

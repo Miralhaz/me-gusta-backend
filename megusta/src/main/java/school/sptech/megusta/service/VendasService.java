@@ -46,6 +46,7 @@ public class VendasService {
     private final SaidaEstoqueRepository saidaEstoqueRepository;
     private final TipoStatusService tipoStatusService;
     private final PlanilhaVendasExtractor planilhaVendasExtractor;
+    private final StockListCacheInvalidator cacheInvalidator;
 
     public VendasService(FogazzasRepository fogazzasRepository,
                          FogazzaInsumoRepository fogazzaInsumoRepository,
@@ -53,7 +54,8 @@ public class VendasService {
                          MotivoRepository motivoRepository,
                          SaidaEstoqueRepository saidaEstoqueRepository,
                          TipoStatusService tipoStatusService,
-                         PlanilhaVendasExtractor planilhaVendasExtractor) {
+                         PlanilhaVendasExtractor planilhaVendasExtractor,
+                         StockListCacheInvalidator cacheInvalidator) {
         this.fogazzasRepository = fogazzasRepository;
         this.fogazzaInsumoRepository = fogazzaInsumoRepository;
         this.insumoRepository = insumoRepository;
@@ -61,6 +63,7 @@ public class VendasService {
         this.saidaEstoqueRepository = saidaEstoqueRepository;
         this.tipoStatusService = tipoStatusService;
         this.planilhaVendasExtractor = planilhaVendasExtractor;
+        this.cacheInvalidator = cacheInvalidator;
     }
 
     /**
@@ -170,6 +173,7 @@ public class VendasService {
                     entrada.getValue(),
                     BigDecimal.valueOf(novaQuantidade)));
         }
+        cacheInvalidator.evictInsumosLista();
         return baixas;
     }
 
