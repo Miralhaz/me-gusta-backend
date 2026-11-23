@@ -1,8 +1,11 @@
 package school.sptech.megusta.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import school.sptech.megusta.config.CacheNames;
+import school.sptech.megusta.dto.insumo.InsumoResponse;
 import school.sptech.megusta.dto.insumo.InsumoResponseTelaInsumos;
 import school.sptech.megusta.dto.ruptura_insumo.RupturaInsumoResponseDto;
 import school.sptech.megusta.exception.RecursoConflitoException;
@@ -32,18 +35,27 @@ public class InsumoService {
     private final TipoStatusService tipoStatusService;
     private final EntradaEstoqueRepository entradaEstoqueRepository;
     private final SaidaEstoqueRepository saidaEstoqueRepository;
+    private final StockListCacheInvalidator cacheInvalidator;
 
-    public InsumoService(InsumoRepository insumoRepository, CategoriaInsumoRepository categoriaInsumoRepository, UnidadeMedidaRepository unidadeMedidaRepository, TipoStatusService tipoStatusService, EntradaEstoqueRepository entradaEstoqueRepository, SaidaEstoqueRepository saidaEstoqueRepository) {
+    public InsumoService(InsumoRepository insumoRepository, CategoriaInsumoRepository categoriaInsumoRepository, UnidadeMedidaRepository unidadeMedidaRepository, TipoStatusService tipoStatusService, EntradaEstoqueRepository entradaEstoqueRepository, SaidaEstoqueRepository saidaEstoqueRepository, StockListCacheInvalidator cacheInvalidator) {
         this.insumoRepository = insumoRepository;
         this.categoriaInsumoRepository = categoriaInsumoRepository;
         this.unidadeMedidaRepository = unidadeMedidaRepository;
         this.tipoStatusService = tipoStatusService;
         this.entradaEstoqueRepository = entradaEstoqueRepository;
         this.saidaEstoqueRepository = saidaEstoqueRepository;
+        this.cacheInvalidator = cacheInvalidator;
     }
 
     public List<Insumo> listar(){
         return insumoRepository.findAll();
+    }
+
+    @Cacheable(cacheNames = CacheNames.INSUMO_LISTA, key = "'todos'")
+    public List<InsumoResponse> listarInsumosParaAlertas() {
+        List<Insumo> insumos = insumoRepository.findAll();
+        Map<Integer, LocalDate> proximasValidades = buscarProximasValidades();
+        return new ArrayList<>(InsumoMapper.toResponse(insumos, proximasValidades));
     }
 
     public Page<Insumo> listarPaginado(String busca, String categoria, Pageable pageable){
@@ -111,7 +123,9 @@ public class InsumoService {
         insumo.setCategoriaInsumo(categoriaInsumo);
         insumo.setUnidadeMedida(unidadeMedida);
         insumo.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumo.getQtdAtual(), insumo.getEstoqueMinimo()));
-        return insumoRepository.save(insumo);
+        Insumo salvo = insumoRepository.save(insumo);
+        cacheInvalidator.evictInsumosLista();
+        return salvo;
     }
 
     public Insumo atualizar(Insumo insumo, Integer id){
@@ -133,7 +147,9 @@ public class InsumoService {
         insumoExistente.setCategoriaInsumo(categoriaInsumo);
         insumoExistente.setUnidadeMedida(unidadeMedida);
         insumoExistente.setTipoStatus(tipoStatusService.calcularStatusEstoque(insumoExistente.getQtdAtual(), insumoExistente.getEstoqueMinimo()));
-        return insumoRepository.save(insumoExistente);
+        Insumo salvo = insumoRepository.save(insumoExistente);
+        cacheInvalidator.evictInsumosLista();
+        return salvo;
     }
 
     // Method auxiliar para calcular o giro mensal do insumo

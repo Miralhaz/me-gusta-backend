@@ -70,6 +70,9 @@ class VendasServiceTest {
     @Mock
     private TipoStatusService tipoStatusService;
 
+    @Mock
+    private StockListCacheInvalidator cacheInvalidator;
+
     @Spy
     private PlanilhaVendasExtractor planilhaVendasExtractor = new PlanilhaVendasExtractor();
 
@@ -608,6 +611,7 @@ class VendasServiceTest {
 
         verify(insumoRepository, never()).save(any(Insumo.class));
         verify(saidaEstoqueRepository, never()).save(any(SaidaEstoque.class));
+        verify(cacheInvalidator, never()).evictInsumosLista();
     }
 
     @Test
@@ -642,6 +646,7 @@ class VendasServiceTest {
         Assertions.assertEquals(new BigDecimal("0.0"), baixas.get(0).getQuantidadeAposSubtracao());
         verify(insumoRepository).save(insumo);
         verify(saidaEstoqueRepository).save(any(SaidaEstoque.class));
+        verify(cacheInvalidator).evictInsumosLista();
     }
 
     // ---------------------------------------------------------------

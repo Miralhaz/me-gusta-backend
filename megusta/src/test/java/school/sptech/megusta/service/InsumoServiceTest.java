@@ -41,6 +41,9 @@ class InsumoServiceTest {
     @Mock
     private TipoStatusService tipoStatusService;
 
+    @Mock
+    private StockListCacheInvalidator cacheInvalidator;
+
     @InjectMocks
     private InsumoService insumoService;
 
@@ -131,6 +134,7 @@ class InsumoServiceTest {
             Mockito.when(insumoRepository.save(insumo)).thenReturn(insumo);
 
             Assertions.assertEquals(insumo, insumoService.cadastrar(insumo));
+            Mockito.verify(cacheInvalidator).evictInsumosLista();
         }
 
         @Test
@@ -205,6 +209,7 @@ class InsumoServiceTest {
             Mockito.when(insumoRepository.existsByNomeOrCodigoInsumo(insumo.getNome(), insumo.getCodigoInsumo())).thenReturn(true);
 
             Assertions.assertThrows(RecursoConflitoException.class, () -> insumoService.cadastrar(insumo));
+            Mockito.verify(cacheInvalidator, Mockito.never()).evictInsumosLista();
         }
     }
 

@@ -59,7 +59,8 @@ public class InsumoController {
         return ResponseEntity.ok(new PagedModel<>(insumos));
     }
 
-    @Operation(summary = "Listar todos os insumos com datas de validade")
+    @Operation(summary = "Listar todos os insumos com datas de validade",
+            description = "Retorna a lista completa de insumos com as datas de validade calculadas.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = InsumoResponse.class))),
@@ -68,12 +69,11 @@ public class InsumoController {
     })
     @GetMapping
     public ResponseEntity<List<InsumoResponse>> listar(){
-        List<Insumo> insumos = insumoService.listar();
+        List<InsumoResponse> insumos = insumoService.listarInsumosParaAlertas();
         if (insumos.isEmpty()){
             return ResponseEntity.noContent().build();
         }
-        Map<Integer, LocalDate> proximasValidades = insumoService.buscarProximasValidades();
-        return ResponseEntity.ok(InsumoMapper.toResponse(insumos, proximasValidades));
+        return ResponseEntity.ok(insumos);
     }
 
     @Operation(summary = "Listar insumos da tela de Estoque com paginação",

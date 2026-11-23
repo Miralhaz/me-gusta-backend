@@ -47,6 +47,9 @@ class SaidaEstoqueServiceTest {
     @Mock
     private TipoStatusService tipoStatusService;
 
+    @Mock
+    private StockListCacheInvalidator cacheInvalidator;
+
     @InjectMocks
     private SaidaEstoqueService saidaEstoqueService;
 
@@ -141,6 +144,7 @@ class SaidaEstoqueServiceTest {
 
             Assertions.assertNotNull(saida.getDtSaida());
             Assertions.assertEquals(saida, resultado);
+            Mockito.verify(cacheInvalidator).evictInsumosLista();
         }
 
         @Test
@@ -285,6 +289,7 @@ class SaidaEstoqueServiceTest {
             Mockito.when(saidaRepo.save(Mockito.any(SaidaEstoque.class))).thenReturn(saida);
 
             Assertions.assertEquals(saida, saidaEstoqueService.atualizar(saida, id));
+            Mockito.verify(cacheInvalidator).evictInsumosLista();
         }
 
         @Test
@@ -461,6 +466,7 @@ class SaidaEstoqueServiceTest {
             saidaEstoqueService.deletar(id);
 
             Mockito.verify(saidaRepo, Mockito.times(1)).delete(saida);
+            Mockito.verify(cacheInvalidator).evictInsumosLista();
         }
 
         @Test
