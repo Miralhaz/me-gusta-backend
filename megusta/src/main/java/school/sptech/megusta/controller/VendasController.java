@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,8 @@ import java.util.List;
 @Tag(name = "12. Vendas", description = "Gerenciamento de vendas")
 public class VendasController {
 
+    private static final long LIMITE_TAMANHO = 10L * 1024 * 1024;
+
     private final VendasService vendasService;
 
     @Operation(summary = "Importar relatório de itens vendidos: aplica a baixa de estoque e devolve os insumos alterados",
@@ -37,6 +40,7 @@ public class VendasController {
             @ApiResponse(responseCode = "200", description = "Relatório importado com sucesso; a lista traz um registro por insumo alterado (lista vazia quando nenhuma quantidade é alterada, por exemplo quando nenhum nome corresponde a uma fogazza cadastrada)",
                     content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = BaixaInsumoResponse.class)))),
             @ApiResponse(responseCode = "400", description = "Arquivo vazio, extensão diferente de .xlsx ou layout não suportado (sem as colunas 'Nome Prod' e 'Qtd.'); nenhuma alteração é persistida", content = @Content),
+            @ApiResponse(responseCode = "413", description = "Arquivo maior que o limite de 10 MB; nenhuma alteração é persistida", content = @Content),
             @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content),
             @ApiResponse(responseCode = "409", description = "Estoque insuficiente para baixar os insumos importados; nenhuma alteração é persistida", content = @Content)
     })
@@ -44,12 +48,17 @@ public class VendasController {
             value = "/importar",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ResponseEntity<List<BaixaInsumoResponse>> importar(
+    public ResponseEntity<?> importar(
             @RequestPart("planilha") MultipartFile planilha
             ) throws IOException {
 
         if (planilha.isEmpty()) {
             return ResponseEntity.badRequest().build();
+        }
+
+        if (planilha.getSize() > LIMITE_TAMANHO) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body("Arquivo maior que o limite de 10 MB.");
         }
 
         String nome = planilha.getOriginalFilename();

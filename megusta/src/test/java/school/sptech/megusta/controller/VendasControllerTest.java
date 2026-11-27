@@ -38,7 +38,7 @@ class VendasControllerTest {
         MockMultipartFile vazio = new MockMultipartFile(
                 "planilha", "vazia.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[0]);
 
-        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(vazio);
+        ResponseEntity<?> resposta = controller.importar(vazio);
 
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, resposta.getStatusCode());
         Assertions.assertNull(resposta.getBody());
@@ -51,11 +51,40 @@ class VendasControllerTest {
         MockMultipartFile naoXlsx = new MockMultipartFile(
                 "planilha", "planilha.xls", "application/vnd.ms-excel", "conteudo".getBytes());
 
-        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(naoXlsx);
+        ResponseEntity<?> resposta = controller.importar(naoXlsx);
 
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, resposta.getStatusCode());
         Assertions.assertNull(resposta.getBody());
         verify(vendasService, never()).importarPlanilha(any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 413 sem persistir nada para planilha maior que 10 MB")
+    void deveRetornar413ParaArquivoMaiorQue10Mb() throws Exception {
+        MockMultipartFile grande = new MockMultipartFile(
+                "planilha", "grande.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new byte[10 * 1024 * 1024 + 1]);
+
+        ResponseEntity<?> resposta = controller.importar(grande);
+
+        Assertions.assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, resposta.getStatusCode());
+        Assertions.assertTrue(String.valueOf(resposta.getBody()).contains("10 MB"));
+        verify(vendasService, never()).importarPlanilha(any());
+    }
+
+    @Test
+    @DisplayName("Deve aceitar planilha com exatamente 10 MB")
+    void deveAceitarArquivoComExatamente10Mb() throws Exception {
+        MockMultipartFile limite = new MockMultipartFile(
+                "planilha", "limite.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new byte[10 * 1024 * 1024]);
+
+        when(vendasService.importarPlanilha(limite)).thenReturn(List.of());
+
+        ResponseEntity<?> resposta = controller.importar(limite);
+
+        Assertions.assertEquals(HttpStatus.OK, resposta.getStatusCode());
+        verify(vendasService).importarPlanilha(limite);
     }
 
     @Test
@@ -70,7 +99,7 @@ class VendasControllerTest {
 
         when(vendasService.importarPlanilha(arquivo)).thenReturn(baixas);
 
-        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(arquivo);
+        ResponseEntity<?> resposta = controller.importar(arquivo);
 
         Assertions.assertEquals(HttpStatus.OK, resposta.getStatusCode());
         Assertions.assertEquals(baixas, resposta.getBody());
@@ -86,11 +115,11 @@ class VendasControllerTest {
 
         when(vendasService.importarPlanilha(arquivo)).thenReturn(List.of());
 
-        ResponseEntity<List<BaixaInsumoResponse>> resposta = controller.importar(arquivo);
+        ResponseEntity<?> resposta = controller.importar(arquivo);
 
         Assertions.assertEquals(HttpStatus.OK, resposta.getStatusCode());
         Assertions.assertNotNull(resposta.getBody());
-        Assertions.assertTrue(resposta.getBody().isEmpty());
+        Assertions.assertTrue(((List<?>) resposta.getBody()).isEmpty());
     }
 
     @Test
